@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>AZM Store</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════ CSS VARS — ALL COLORS HERE ══════════════ */
+:root{
+  --c-primary:#e81212;
+  --c-dark:#990000;
+  --c-accent:#c01010;
+  --c-bg:#1a0808;
+  --c-card:rgba(255,255,255,0.07);
+  --c-card-solid:#2a0d0d;
+  --c-text:#f0e8e8;
+  --c-text2:#c8a0a0;
+  --c-text3:#9a6868;
+  --c-border:rgba(255,255,255,0.12);
+  --c-shadow:200,20,20;
+  --c-chip-active-bg:#c01010;
+  --c-tab-active-bg:#c01010;
+  --c-btn-bar:rgba(255,255,255,0.08);
+  --c-title:#ffffff;
+  --tab-bar-bg:rgba(18,6,6,0.96);
+  --tab-wrapper-bg:#1a0808;
+  --header-grad:linear-gradient(135deg,#8b0000,#c01010);
+  --center-btn-grad:linear-gradient(135deg,#e81212,#990000);
+  --page-bg:linear-gradient(180deg,#2d0808 0%,#1a0808 60%,#0f0404 100%);
+}
+/* ══════════════ RESET ══════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Cairo',sans-serif;color:var(--c-text);display:flex;flex-direction:column;height:100vh;background:var(--c-bg)}
+button{font-family:'Cairo',sans-serif;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:'Cairo',sans-serif}
+a{text-decoration:none}
+/* ══════════════ BG OVERLAY ══════════════ */
+#bg-overlay{
+  position:fixed;inset:0;z-index:0;
+  background:var(--page-bg);
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  transition:background .4s;
+}
+/* ══════════════ LAYOUT ══════════════ */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden;position:relative;z-index:1;background:transparent!important}
+#page{flex:1;overflow-y:auto;padding-bottom:80px;-webkit-overflow-scrolling:touch}
+.warn-bar{background:rgba(180,10,10,0.92);color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:700;flex-shrink:0;letter-spacing:.3px}
+/* ══════════════ TAB BAR ══════════════ */
+.tab-bar-wrapper{position:fixed;bottom:0;left:0;right:0;padding:6px 10px 8px;background:var(--tab-wrapper-bg);z-index:100;border-top:1px solid var(--c-border)}
+.tab-bar{display:flex;align-items:flex-end;justify-content:space-around;background:var(--tab-bar-bg);border-radius:28px;padding:4px 2px;box-shadow:0 0 24px rgba(var(--c-shadow),.25);gap:2px;border:1px solid var(--c-border)}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;padding:7px 2px 5px;border-radius:22px;transition:background .18s;font-size:10px;font-weight:700;color:var(--c-text3)}
+.tab-item.active{background:var(--c-tab-active-bg);color:#fff}
+.tab-item svg{width:20px;height:20px;transition:all .18s}
+.tab-center-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;top:-8px}
+.tab-center-btn{width:50px;height:50px;border-radius:50%;background:var(--center-btn-grad);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(var(--c-shadow),.55);border:3px solid var(--c-bg);transition:transform .15s}
+.tab-center-btn:active{transform:scale(0.92)}
+.tab-center-label{font-size:10px;font-weight:700;color:var(--c-text2)}
+/* ══════════════ BALANCE CARD ══════════════ */
+.balance-card{margin:12px 12px 0;border-radius:18px;background:rgba(255,255,255,0.05);border:1px solid var(--c-border);padding:14px 16px;backdrop-filter:blur(8px)}
+.balance-card-inner{display:flex;align-items:center;justify-content:space-between}
+.balance-left{display:flex;flex-direction:column;gap:6px}
+.balance-uid{background:rgba(255,255,255,0.12);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--c-text);display:inline-block;width:fit-content}
+.balance-add-btn{background:linear-gradient(135deg,#00c864,#00a050);border-radius:20px;padding:6px 18px;font-size:13px;font-weight:800;color:#fff;display:inline-flex;align-items:center;gap:5px;width:fit-content;cursor:pointer;box-shadow:0 3px 12px rgba(0,180,80,.35)}
+.balance-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.balance-label{font-size:12px;color:var(--c-text2);font-weight:600}
+.balance-val{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.balance-wallet{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0088cc,#005580);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 3px 12px rgba(0,100,200,.3)}
+/* ══════════════ SECTIONS GRID ══════════════ */
+.sections-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px}
+.sec-card{border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.06);border:1px solid var(--c-border);cursor:pointer;transition:transform .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent}
+.sec-card:active{transform:scale(0.93)}
+.sec-card-img{width:100%;aspect-ratio:1;overflow:hidden;position:relative;background:linear-gradient(135deg,rgba(var(--c-shadow),.3),rgba(0,0,0,.4));display:flex;align-items:center;justify-content:center;font-size:30px}
+.sec-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.sec-card-label{padding:6px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--c-text);line-height:1.2}
+/* ══════════════ BACK HEADER ══════════════ */
+.page-header{background:var(--header-grad);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+.page-header h2{font-size:16px;font-weight:800;flex:1}
+.page-header .sub{font-size:11px;opacity:.8;margin-top:1px}
+.back-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0}
+/* ══════════════ PRODUCTS LIST ══════════════ */
+.products-list{display:flex;flex-direction:column;gap:10px;padding:10px 12px 0}
+.product-card{background:var(--c-card);border-radius:16px;border:1px solid var(--c-border);overflow:hidden;display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent}
+.product-card:active{transform:scale(0.97)}
+.product-icon{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--c-shadow),.3),rgba(0,0,0,.4));display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden}
+.product-icon img{width:100%;height:100%;object-fit:cover}
+.product-info{flex:1;min-width:0}
+.product-name{font-size:14px;font-weight:800;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-desc{font-size:11px;color:var(--c-text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-arrow{color:var(--c-primary);font-size:20px;font-weight:700}
+/* ══════════════ BOTTOM SHEET ══════════════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.sheet{background:var(--c-card-solid);width:100%;border-radius:24px 24px 0 0;max-height:90vh;overflow-y:auto;border-top:1px solid var(--c-border)}
+.sheet-handle{width:40px;height:4px;background:var(--c-border);border-radius:2px;margin:10px auto 4px;cursor:pointer}
+.sheet-header{padding:10px 16px 14px;border-bottom:1px solid var(--c-border);font-size:16px;font-weight:800;color:var(--c-title)}
+.tier-list{display:flex;flex-direction:column;gap:10px;padding:14px 12px}
+.tier-item{background:var(--c-btn-bar);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;border:2px solid transparent;cursor:pointer;transition:all .15s}
+.tier-item:active{transform:scale(0.97)}
+.tier-item.selected{border-color:var(--c-primary);background:rgba(var(--c-shadow),.15)}
+.tier-name{font-size:14px;font-weight:700;color:var(--c-text)}
+.tier-price{font-size:15px;font-weight:800;color:var(--c-primary)}
+/* ══════════════ INPUTS ══════════════ */
+.input-wrap{padding:0 12px;margin-top:10px}
+.input-label{font-size:12px;font-weight:700;color:var(--c-text2);margin-bottom:5px}
+.inp{width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--c-border);background:var(--c-btn-bar);font-size:14px;color:var(--c-text);outline:none;transition:border .15s}
+.inp:focus{border-color:var(--c-primary)}
+.inp::placeholder{color:var(--c-text3)}
+/* ══════════════ BUTTONS ══════════════ */
+.btn{display:block;width:calc(100% - 24px);margin:12px 12px 0;padding:13px;border-radius:14px;font-size:15px;font-weight:800;text-align:center;transition:opacity .15s;cursor:pointer}
+.btn:active{opacity:.82}
+.btn-primary{background:var(--header-grad);color:#fff}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-success{background:#16a34a;color:#fff}
+.btn-outline{border:2px solid var(--c-primary);color:var(--c-primary);background:transparent}
+/* ══════════════ DEPOSIT METHODS ══════════════ */
+.methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px 0}
+.method-item{background:var(--c-card);border-radius:16px;border:2px solid transparent;cursor:pointer;overflow:hidden;transition:all .18s}
+.method-item.selected{border-color:var(--c-primary)}
+.method-img-wrap{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,rgba(var(--c-shadow),.4),rgba(0,0,0,.5));overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;font-size:36px}
+.method-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.method-check{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--c-primary);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
+.method-item.selected .method-check{opacity:1}
+.method-body{padding:10px}
+.method-title{font-size:13px;font-weight:800;color:var(--c-text)}
+.method-desc{font-size:11px;color:var(--c-text3);margin-top:3px;line-height:1.4}
+.method-rate{font-size:10px;color:var(--c-text3);margin-top:4px}
+/* ── Copy code box ── */
+.method-code-box{display:flex;align-items:center;gap:6px;margin-top:6px;background:rgba(var(--c-shadow),.12);border-radius:8px;padding:6px 8px}
+.method-code-text{flex:1;font-size:12px;font-weight:800;color:var(--c-primary);letter-spacing:.5px}
+.copy-btn{background:var(--c-primary);color:#fff;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:opacity .15s}
+.copy-btn:active{opacity:.7}
+/* ── Deposit detail card ── */
+.dep-method-detail{margin:10px 12px 0;border-radius:16px;border:1px solid var(--c-border);overflow:hidden}
+.dep-method-detail-img{width:100%;height:140px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(var(--c-shadow),.4),rgba(0,0,0,.5));display:flex;align-items:center;justify-content:center;font-size:48px}
+.dep-method-detail-img img{width:100%;height:100%;object-fit:cover}
+.dep-method-detail-body{padding:12px}
+.dep-method-detail-title{font-size:15px;font-weight:800;color:var(--c-title)}
+.dep-method-detail-desc{font-size:12px;color:var(--c-text2);margin-top:4px;line-height:1.5}
+.dep-code-full{display:flex;align-items:center;gap:8px;margin-top:10px;background:rgba(var(--c-shadow),.15);border-radius:12px;padding:10px 12px}
+.dep-code-full-label{font-size:11px;color:var(--c-text3);margin-bottom:2px}
+.dep-code-full-val{font-size:16px;font-weight:900;color:var(--c-primary);letter-spacing:.5px}
+.dep-code-copy{background:var(--c-primary);color:#fff;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;transition:transform .15s}
+.dep-code-copy:active{transform:scale(0.94)}
+/* ══════════════ CARDS ══════════════ */
+.card{background:var(--c-card);border-radius:16px;border:1px solid var(--c-border);padding:14px;margin:10px 12px 0}
+/* ══════════════ ORDER ITEMS ══════════════ */
+.order-item{background:var(--c-card);border-radius:14px;padding:12px;margin:10px 12px 0;border:1px solid var(--c-border)}
+.order-row{display:flex;justify-content:space-between;align-items:center}
+.order-title{font-size:13px;font-weight:700;color:var(--c-text)}
+.order-sub{font-size:11px;color:var(--c-text3);margin-top:3px}
+.order-price{font-size:14px;font-weight:800;color:var(--c-primary)}
+/* ══════════════ BADGES ══════════════ */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-pending{background:rgba(234,179,8,.2);color:#fbbf24}
+.badge-completed,.badge-approved{background:rgba(22,163,74,.2);color:#4ade80}
+.badge-rejected,.badge-cancelled{background:rgba(220,38,38,.2);color:#f87171}
+.badge-processing{background:rgba(59,130,246,.2);color:#60a5fa}
+/* ══════════════ SUPPORT ══════════════ */
+.support-center{display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center;gap:16px}
+.support-icon{width:80px;height:80px;border-radius:50%;background:var(--header-grad);display:flex;align-items:center;justify-content:center;font-size:38px}
+.support-title{font-size:18px;font-weight:800;color:var(--c-title)}
+.support-sub{font-size:13px;color:var(--c-text2);line-height:1.7}
+.support-link{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#0088cc,#005580);color:#fff;border-radius:14px;font-size:14px;font-weight:700}
+/* ══════════════ ADMIN ══════════════ */
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--c-border);padding:0 8px;overflow-x:auto;scrollbar-width:none;background:transparent}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{flex-shrink:0;padding:10px 10px;font-size:11px;font-weight:700;color:var(--c-text3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;cursor:pointer;transition:color .15s}
+.admin-tab.active{color:var(--c-primary);border-bottom-color:var(--c-primary)}
+.admin-item{background:var(--c-card);border-radius:14px;padding:12px;margin:10px 12px 0;border:1px solid var(--c-border)}
+.admin-actions{display:flex;gap:8px;margin-top:10px}
+.admin-btn{flex:1;padding:8px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Cairo',sans-serif}
+.admin-btn-approve{background:rgba(22,163,74,.2);color:#4ade80}
+.admin-btn-reject{background:rgba(220,38,38,.2);color:#f87171}
+.admin-btn-edit{background:rgba(234,179,8,.2);color:#fbbf24}
+.admin-btn-neutral{background:rgba(255,255,255,.08);color:var(--c-text2)}
+.section-form{background:var(--c-card);border-radius:16px;padding:14px;margin:10px 12px 0;border:1px solid var(--c-border)}
+.setting-row{padding:0 12px;margin-top:12px}
+.setting-label{font-size:12px;font-weight:700;color:var(--c-text2);margin-bottom:5px}
+.setting-inp{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--c-border);background:rgba(255,255,255,.05);font-size:13px;color:var(--c-text);outline:none;transition:border .15s;font-family:'Cairo',sans-serif}
+.setting-inp:focus{border-color:var(--c-primary)}
+.setting-inp::placeholder{color:var(--c-text3)}
+/* ══════════════ APPEARANCE ══════════════ */
+.theme-preview{margin:12px;border-radius:16px;overflow:hidden;height:130px;position:relative;border:1px solid var(--c-border)}
+.color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 12px}
+.color-swatch{height:48px;border-radius:12px;cursor:pointer;border:2px solid transparent;transition:all .15s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.color-swatch.selected{border-color:#fff;transform:scale(1.1)}
+.upload-zone{margin:10px 12px 0;border:2px dashed var(--c-border);border-radius:16px;padding:22px 16px;text-align:center;cursor:pointer;background:var(--c-btn-bar);transition:border-color .15s}
+.upload-zone:hover{border-color:var(--c-primary)}
+/* ══════════════ STATS ══════════════ */
+.stats-row{display:flex;gap:10px;padding:10px 12px 0}
+.stat-box{flex:1;background:var(--c-card);border-radius:14px;padding:12px;text-align:center;border:1px solid var(--c-border)}
+.stat-val{font-size:17px;font-weight:800;color:var(--c-primary)}
+.stat-lbl{font-size:11px;color:var(--c-text3);margin-top:2px}
+/* ══════════════ IMG PICK ══════════════ */
+.img-pick-wrap{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--c-border)}
+.img-pick-wrap img{width:100%;height:90px;object-fit:cover;display:block}
+.img-pick-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,0,0,.4)}
+.img-pick-zone{width:100%;padding:14px;border-radius:10px;border:2px dashed var(--c-border);background:var(--c-btn-bar);color:var(--c-text3);cursor:pointer;font-size:13px;font-weight:700;text-align:center;font-family:'Cairo',sans-serif}
+.img-pick-zone:hover{border-color:var(--c-primary);color:var(--c-primary)}
+/* ══════════════ EMPTY & SPINNER ══════════════ */
+.empty{display:flex;flex-direction:column;align-items:center;padding:50px 20px;color:var(--c-text3);gap:10px}
+.empty-icon{font-size:44px}
+.empty-text{font-size:14px;font-weight:600}
+.spinner{display:flex;justify-content:center;padding:30px}
+.spinner::after{content:'';width:28px;height:28px;border-radius:50%;border:3px solid var(--c-border);border-top-color:var(--c-primary);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ══════════════ TOAST ══════════════ */
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;border:1px solid var(--c-border)}
+#toast.show{opacity:1}
+/* ══════════════ SECTION HEADER ══════════════ */
+.store-header{padding:12px 16px 6px;display:flex;align-items:center;justify-content:space-between}
+.store-title{font-size:18px;font-weight:900;color:var(--c-title)}
+.store-sub{font-size:12px;color:var(--c-text3);margin-top:1px}
+</style>
+</head>
+<body>
+<div id="bg-overlay"></div>
+<div id="app">
+  <div id="warn-bar" class="warn-bar" style="display:none">⚠️ افتح من داخل تيليغرام للحصول على تجربة كاملة</div>
+  <div id="page"></div>
+  <div class="tab-bar-wrapper"><div class="tab-bar" id="tab-bar"></div></div>
+</div>
+<div class="overlay" id="product-sheet"><div class="sheet" id="sheet-content"></div></div>
+<input type="file" id="_file_input" accept="image/*" style="display:none"/>
+<div id="toast"></div>
+<script>
+// ════════════════════════════════════════════
+// ⚙️  CONFIG
+// ════════════════════════════════════════════
+const API_BASE = "";
+const ADMIN_IDS = [6200238604, 7286288857];
+
+// ════════════════════════════════════════════
+// TELEGRAM
+// ════════════════════════════════════════════
+const tg = window.Telegram?.WebApp;
+let tgUser = null;
+if (tg) { tg.expand?.(); tg.ready?.(); tgUser = tg.initDataUnsafe?.user || null; }
+const userId = tgUser?.id ?? 0;
+const isAdmin = ADMIN_IDS.includes(userId);
+if (!tgUser) document.getElementById("warn-bar").style.display = "block";
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let currentTab = "home";
+let userBalance = 0;
+let currentSection = null; // { id, title, emoji, image }
+
+// ════════════════════════════════════════════
+// THEME ENGINE
+// ════════════════════════════════════════════
+const PRESET_THEMES = [
+  { label:"🔴 أحمر داكن",  bg:"#1a0808", primary:"#e81212", dark:"#990000", accent:"#c01010" },
+  { label:"🟫 بني دافئ",   bg:"#1e1008", primary:"#c0471a", dark:"#8b2500", accent:"#8b3a1a" },
+  { label:"🌙 ليلي أزرق",  bg:"#0f1923", primary:"#3b82f6", dark:"#1d4ed8", accent:"#1e40af" },
+  { label:"🌿 أخضر",       bg:"#0a1a10", primary:"#16a34a", dark:"#166534", accent:"#14532d" },
+  { label:"🔥 برتقالي",    bg:"#1a0e08", primary:"#ef4444", dark:"#991b1b", accent:"#7f1d1d" },
+  { label:"💜 بنفسجي",     bg:"#1e1b2e", primary:"#8b5cf6", dark:"#5b21b6", accent:"#4c1d95" },
+  { label:"🌸 وردي",       bg:"#1a0814", primary:"#db2777", dark:"#9d174d", accent:"#831843" },
+  { label:"🩵 تيل",        bg:"#081820", primary:"#0891b2", dark:"#0e7490", accent:"#155e75" },
+  { label:"🟠 برتقالي2",   bg:"#1a1008", primary:"#ea580c", dark:"#9a3412", accent:"#7c2d12" },
+  { label:"🖤 ذهبي",       bg:"#111827", primary:"#f59e0b", dark:"#d97706", accent:"#b45309" },
+];
+
+const PRESET_COLORS = [
+  "#1a0808","#0f1923","#0f3460","#16213e","#2d1a0e",
+  "#1b4332","#3d0c02","#1e1e2e","#0d0d0d","#101010",
+  "#f5f0eb","#fff8f0","#f0f9ff","#f0faf4","#fdf4ff",
+];
+
+let _theme = { bg:"#1a0808", primary:"#e81212", dark:"#990000", accent:"#c01010" };
+let _bgImg = "";
+
+function _loadSavedTheme() {
+  try { const t = JSON.parse(localStorage.getItem("azm_theme_v2")||"null"); if(t?.primary) _theme=t; } catch(e){}
+  _bgImg = localStorage.getItem("azm_bg_img") || "";
+}
+
+function isDarkColor(hex) {
+  try {
+    let c = hex.replace("#","");
+    if(c.length===3) c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    if(c.length!==6) return true;
+    const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+    return (r*299+g*587+b*114)/1000 < 128;
+  } catch(e){ return true; }
+}
+
+function applyTheme(theme, imgUrl) {
+  if (theme) _theme = theme;
+  if (imgUrl !== undefined) _bgImg = imgUrl;
+  const r = document.documentElement.style;
+  const isDark = isDarkColor(_theme.bg);
+  r.setProperty("--c-primary",   _theme.primary);
+  r.setProperty("--c-dark",      _theme.dark);
+  r.setProperty("--c-accent",    _theme.accent);
+  r.setProperty("--c-bg",        _theme.bg);
+  r.setProperty("--c-card",      isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)");
+  r.setProperty("--c-card-solid",isDark ? "#2a0d0d" : "#f5f0eb");
+  r.setProperty("--c-text",      isDark ? "#f0e8e8" : "#1a0808");
+  r.setProperty("--c-text2",     isDark ? "#c8a0a0" : "#5a3010");
+  r.setProperty("--c-text3",     isDark ? "#9a6868" : "#8a6040");
+  r.setProperty("--c-title",     isDark ? "#ffffff" : "#1a0808");
+  r.setProperty("--c-border",    isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)");
+  r.setProperty("--c-shadow",    isDark ? "200,20,20" : "120,60,20");
+  r.setProperty("--c-btn-bar",   isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)");
+  r.setProperty("--c-chip-active-bg", _theme.accent);
+  r.setProperty("--c-tab-active-bg",  _theme.accent);
+  r.setProperty("--tab-bar-bg",       isDark ? "rgba(10,4,4,0.96)" : "rgba(255,255,255,0.96)");
+  r.setProperty("--tab-wrapper-bg",   _theme.bg);
+  r.setProperty("--header-grad",      `linear-gradient(135deg,${_theme.dark},${_theme.primary})`);
+  r.setProperty("--center-btn-grad",  `linear-gradient(135deg,${_theme.primary},${_theme.dark})`);
+  r.setProperty("--page-bg",          `linear-gradient(180deg,${_theme.bg} 0%,${_theme.bg}cc 60%,${_theme.bg}aa 100%)`);
+
+  // Background overlay
+  const ov = document.getElementById("bg-overlay");
+  if (ov) {
+    ov.style.background = `linear-gradient(180deg,${_theme.bg} 0%,${_theme.dark}44 100%)`;
+    if (_bgImg) {
+      const src = _bgImg.startsWith("http") || _bgImg.startsWith("data:") ? _bgImg : API_BASE + _bgImg;
+      ov.style.backgroundImage = `url('${src}')`;
+      ov.style.backgroundSize = "cover";
+      ov.style.backgroundPosition = "center";
+    } else {
+      ov.style.backgroundImage = "";
+    }
+  }
+}
+
+// ════════════════════════════════════════════
+// API
+// ════════════════════════════════════════════
+async function api(path, opts={}) {
+  const res = await fetch(API_BASE + path, { headers:{"Content-Type":"application/json"}, ...opts });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ════════════════════════════════════════════
+// TOAST & COPY
+// ════════════════════════════════════════════
+function toast(msg, dur=2400) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"), dur);
+}
+function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(()=>toast("✅ تم النسخ!")).catch(()=>_fallbackCopy(text));
+  } else { _fallbackCopy(text); }
+}
+function _fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand("copy"); toast("✅ تم النسخ!"); } catch(e){ toast("فشل النسخ"); }
+  document.body.removeChild(ta);
+}
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function statusLabel(s){ return {pending:"معلّق",completed:"مكتمل",cancelled:"ملغى",processing:"جارٍ"}[s]||s; }
+function depositStatusLabel(s){ return {pending:"معلّق",approved:"مقبول",rejected:"مرفوض"}[s]||s; }
+function formatDate(d){ if(!d)return""; try{return new Date(d).toLocaleString("ar-SY");}catch{return d;} }
+function H(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function imgSrc(url){ if(!url)return""; return(url.startsWith("http")||url.startsWith("data:"))?url:API_BASE+url; }
+
+// ════════════════════════════════════════════
+// FILE UPLOADER
+// ════════════════════════════════════════════
+let _uploadCallback = null;
+document.getElementById("_file_input").addEventListener("change", async function(){
+  const file = this.files[0];
+  if(!file||!_uploadCallback) return;
+  if(file.size > 5*1024*1024){ toast("❌ الصورة أكبر من 5 MB"); return; }
+  toast("⏳ جارٍ الرفع...");
+  const fd = new FormData(); fd.append("file", file);
+  try {
+    const res = await fetch(API_BASE + "/api/shop/upload", {method:"POST", body:fd});
+    const data = await res.json();
+    if(data.url){ _uploadCallback(data.url); } else toast("❌ فشل الرفع");
+  } catch(e){ toast("❌ فشل رفع الصورة"); }
+  this.value = "";
+});
+function pickFile(cb){ _uploadCallback = cb; document.getElementById("_file_input").click(); }
+
+// ════════════════════════════════════════════
+// TAB BAR
+// ════════════════════════════════════════════
+const ICONS = {
+  home:    on=>`<svg viewBox="0 0 24 24" fill="${on?'#fff':'none'}" stroke="${on?'#fff':'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5z"/><path d="M9 22V13h6v9"/></svg>`,
+  orders:  on=>`<svg viewBox="0 0 24 24" fill="none" stroke="${on?'#fff':'currentColor'}" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>`,
+  history: on=>`<svg viewBox="0 0 24 24" fill="none" stroke="${on?'#fff':'currentColor'}" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 15.5"/></svg>`,
+  phone:   on=>`<svg viewBox="0 0 24 24" fill="none" stroke="${on?'#fff':'currentColor'}" stroke-width="1.8" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-.83a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+  shield:  ()=>`<svg viewBox="0 0 24 24" fill="none" stroke="#f0a443" stroke-width="1.8" stroke-linecap="round"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6L12 2z"/></svg>`,
+  plus:    ()=>`<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+};
+
+function renderTabBar(){
+  const bar = document.getElementById("tab-bar");
+  const tabs = [
+    { id:"support",  label:"اتصل بنا",  icon:"phone"   },
+    { id:"deposits", label:"سجل الشحن", icon:"history" },
+    { id:"deposit",  label:"شحن",   center:true         },
+    { id:"orders",   label:"طلباتي",    icon:"orders"  },
+    { id:"home",     label:"الرئيسية",  icon:"home"    },
+  ];
+  if(isAdmin) tabs.push({ id:"admin", label:"التحكم", icon:"shield" });
+  bar.innerHTML = tabs.map(t=>{
+    if(t.center) return `
+      <div class="tab-center-wrap" onclick="navigate('deposit')">
+        <div class="tab-center-btn">${ICONS.plus()}</div>
+        <span class="tab-center-label">شحن</span>
+      </div>`;
+    const on = currentTab===t.id;
+    return `<button class="tab-item ${on?"active":""}" onclick="navigate('${t.id}')">
+      ${ICONS[t.icon]?.(on)}<span>${t.label}</span></button>`;
+  }).join("");
+}
+
+function navigate(tab){ currentTab=tab; currentSection=null; renderTabBar(); renderPage(); }
+
+// ════════════════════════════════════════════
+// PAGE: HOME — الرئيسية
+// ════════════════════════════════════════════
+async function renderHome(){
+  // If a section is selected → show products for it
+  if(currentSection){
+    await renderSectionProducts();
+    return;
+  }
+
+  document.getElementById("page").innerHTML = `
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-card-inner">
+        <div class="balance-left">
+          <div class="balance-uid">${userId || "مجهول"}</div>
+          <div class="balance-add-btn" onclick="navigate('deposit')">
+            <span style="font-size:18px;font-weight:900">+</span> شحن رصيد
+          </div>
+        </div>
+        <div class="balance-right">
+          <div>
+            <div class="balance-label">رصيدك الحالي</div>
+            <div class="balance-val">$ ${parseFloat(String(userBalance||0)).toFixed(3)}</div>
+          </div>
+          <div class="balance-wallet" onclick="navigate('deposit')" title="شحن">💳</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store title -->
+    <div class="store-header">
+      <div>
+        <div class="store-title">🛒 AZM Store</div>
+        <div class="store-sub">${tgUser ? "أهلاً، "+H(tgUser.first_name||"") : "اختر قسماً للتسوق"}</div>
+      </div>
+    </div>
+
+    <!-- Sections grid -->
+    <div id="sections-grid-wrap"><div class="spinner"></div></div>`;
+
+  try {
+    const sections = await api("/api/shop/sections");
+    const activeOnly = sections.filter(s=>s.active!==0);
+    if(!activeOnly.length){
+      document.getElementById("sections-grid-wrap").innerHTML =
+        `<div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">لا توجد أقسام بعد</div></div>`;
+      return;
+    }
+    document.getElementById("sections-grid-wrap").innerHTML =
+      `<div class="sections-grid">${activeOnly.map(s=>{
+        const img = imgSrc(s.image);
+        const emoji = s.emoji || "🛍️";
+        return `<div class="sec-card" onclick="openSection(${s.id},'${H(s.title)}','${H(s.emoji||'')}','${H(s.image||'')}')">
+          <div class="sec-card-img">
+            ${img?`<img src="${img}" alt="${H(s.title)}" loading="lazy"/>`:""}
+            <span style="position:relative;z-index:1;${img?"display:none":"display:block"}">${emoji}</span>
+          </div>
+          <div class="sec-card-label">${H(s.title)}</div>
+        </div>`;
+      }).join("")}</div>`;
+  } catch(e){
+    document.getElementById("sections-grid-wrap").innerHTML =
+      `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر الاتصال بالسيرفر</div></div>`;
+  }
+}
+
+function openSection(id, title, emoji, image){
+  currentSection = { id, title, emoji, image };
+  renderPage();
+}
+
+async function renderSectionProducts(){
+  const sec = currentSection;
+  document.getElementById("page").innerHTML = `
+    <div class="page-header">
+      <div class="back-btn" onclick="currentSection=null;renderPage()">‹</div>
+      <div>
+        <h2>${H(sec.emoji||"")} ${H(sec.title)}</h2>
+      </div>
+    </div>
+    <div id="products-wrap"><div class="spinner"></div></div>`;
+  try {
+    const prods = await api(`/api/shop/products?section_id=${sec.id}`);
+    const activeP = prods.filter(p=>p.active!==0);
+    if(!activeP.length){
+      document.getElementById("products-wrap").innerHTML =
+        `<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">لا توجد منتجات في هذا القسم</div></div>`;
+      return;
+    }
+    document.getElementById("products-wrap").innerHTML = `<div class="products-list">${activeP.map(p=>{
+      const img = imgSrc(p.image);
+      return `<div class="product-card" onclick="openProduct(${p.id},'${H(p.name)}','${H(p.image||'')}')">
+        <div class="product-icon">
+          ${img?`<img src="${img}" alt="${H(p.name)}" loading="lazy"/>`:"🎮"}
+        </div>
+        <div class="product-info">
+          <div class="product-name">${H(p.name)}</div>
+          ${p.description?`<div class="product-desc">${H(p.description)}</div>`:""}
+        </div>
+        <div class="product-arrow">›</div>
+      </div>`;
+    }).join("")}</div>`;
+  } catch(e){
+    document.getElementById("products-wrap").innerHTML =
+      `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر التحميل</div></div>`;
+  }
+}
+
+// ── Product Bottom Sheet ─────────────────────────────────────────
+let selectedTier=null, currentProductId=null, currentProductName="";
+
+async function openProduct(pid, name, image){
+  currentProductId=pid; currentProductName=name;
+  const overlay=document.getElementById("product-sheet"), content=document.getElementById("sheet-content");
+  overlay.classList.add("open");
+  const imgS = imgSrc(image);
+  content.innerHTML = `
+    ${imgS?`<div style="width:100%;height:140px;overflow:hidden;border-radius:20px 20px 0 0"><img src="${imgS}" style="width:100%;height:100%;object-fit:cover"/></div>`:""}
+    <div class="sheet-handle" onclick="closeSheet()"></div>
+    <div class="sheet-header">${H(name)}</div>
+    <div class="spinner"></div>`;
+  try {
+    const tiers = await api(`/api/shop/products/${pid}/categories`);
+    const activeT = tiers.filter(t=>t.active!==0);
+    if(!activeT.length){
+      content.innerHTML += `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">لا توجد خيارات متاحة</div></div>`;
+      content.querySelector(".spinner")?.remove();
+      return;
+    }
+    renderTierSheet(activeT, imgS, name);
+  } catch(e){
+    content.innerHTML = `<div class="sheet-handle" onclick="closeSheet()"></div>
+      <div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">خطأ في التحميل</div></div>`;
+  }
+}
+
+function renderTierSheet(tiers, imgS, name){
+  document.getElementById("sheet-content").innerHTML = `
+    ${imgS?`<div style="width:100%;height:130px;overflow:hidden;border-radius:20px 20px 0 0"><img src="${imgS}" style="width:100%;height:100%;object-fit:cover"/></div>`:""}
+    <div class="sheet-handle" onclick="closeSheet()"></div>
+    <div class="sheet-header">${H(name)}</div>
+    <div class="tier-list">
+      ${tiers.map(t=>`
+        <div class="tier-item" id="tier-${t.id}"
+          onclick="selectTier(${t.id},${t.price},'${H(t.name)}',${t.min_qty||1},${t.max_qty||1},'${H(t.player_id_label||'معرف اللاعب')}')">
+          <div class="tier-name">${H(t.name)}</div>
+          <div class="tier-price">${Number(t.price).toLocaleString()} $</div>
+        </div>`).join("")}
+    </div>
+    <div id="order-form" style="display:none"></div>
+    <div id="order-btn-wrap"></div>
+    <div style="height:10px"></div>`;
+}
+
+function selectTier(id, price, name, minQty, maxQty, label){
+  selectedTier={id,price,name,minQty,maxQty,label};
+  document.querySelectorAll(".tier-item").forEach(el=>el.classList.remove("selected"));
+  document.getElementById("tier-"+id)?.classList.add("selected");
+  const form=document.getElementById("order-form");
+  form.style.display="block";
+  form.innerHTML=`
+    <div class="input-wrap">
+      <div class="input-label">${H(label)}</div>
+      <input class="inp" id="player-id-inp" placeholder="أدخل ${H(label)}" type="text"/>
+    </div>
+    ${maxQty>1?`
+    <div class="input-wrap">
+      <div class="input-label">الكمية (${minQty}–${maxQty})</div>
+      <input class="inp" id="qty-inp" type="number" min="${minQty}" max="${maxQty}" value="${minQty}"/>
+    </div>`:""}`;
+  document.getElementById("order-btn-wrap").innerHTML=
+    `<button class="btn btn-primary" onclick="placeOrder(${id})">🛒 شراء — ${Number(price).toLocaleString()} $</button>`;
+}
+
+async function placeOrder(catId){
+  if(!userId){ toast("افتح من داخل تيليغرام"); return; }
+  const playerId=document.getElementById("player-id-inp")?.value?.trim();
+  if(!playerId){ toast("أدخل "+( selectedTier?.label||"معرف اللاعب")); return; }
+  const qty=parseInt(document.getElementById("qty-inp")?.value||"1");
+  try {
+    await api("/api/shop/orders",{
+      method:"POST",
+      body:JSON.stringify({user_id:userId,product_id:currentProductId,category_id:catId,player_id:playerId,qty})
+    });
+    toast("✅ تم إرسال الطلب بنجاح");
+    closeSheet();
+    userBalance -= (selectedTier?.price||0)*qty;
+    document.querySelectorAll(".balance-val").forEach(el=>el.textContent="$ "+parseFloat(String(userBalance)).toFixed(3));
+  } catch(e){ toast(e.message.includes("رصيد")?"❌ رصيدك غير كافٍ":"❌ فشل إرسال الطلب"); }
+}
+
+function closeSheet(){ document.getElementById("product-sheet").classList.remove("open"); }
+document.getElementById("product-sheet").addEventListener("click",function(e){ if(e.target===this) closeSheet(); });
+
+// ════════════════════════════════════════════
+// PAGE: DEPOSIT — شحن رصيد
+// ════════════════════════════════════════════
+let depositMethods=[], selectedMethod=null;
+
+async function renderDeposit(){
+  selectedMethod=null;
+  document.getElementById("page").innerHTML=`
+    <div class="page-header"><div style="flex:1"><h2>💳 شحن رصيد</h2><div class="sub">اختر طريقة الإيداع</div></div></div>
+    <div id="methods-wrap"><div class="spinner"></div></div>
+    <div id="deposit-detail" style="display:none"></div>
+    <div id="deposit-form-wrap" style="display:none">
+      <div class="input-wrap">
+        <div class="input-label">المبلغ (بالليرة السورية)</div>
+        <input class="inp" id="dep-amount" type="number" placeholder="مثال: 50000"/>
+      </div>
+      <div class="input-wrap">
+        <div class="input-label">رقم العملية / كود التحويل</div>
+        <input class="inp" id="dep-code" type="text" placeholder="أدخل رقم العملية"/>
+      </div>
+      <div id="dep-calc" style="padding:0 12px;margin-top:6px;font-size:13px;color:var(--c-text3)"></div>
+      <button class="btn btn-primary" onclick="submitDeposit()">📤 إرسال طلب الشحن</button>
+      <div style="height:10px"></div>
+    </div>`;
+  try {
+    depositMethods = await api("/api/shop/deposit-methods");
+    renderMethods();
+  } catch(e){
+    document.getElementById("methods-wrap").innerHTML=
+      `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل طرق الدفع</div></div>`;
+  }
+}
+
+function renderMethods(){
+  const wrap=document.getElementById("methods-wrap");
+  if(!depositMethods.length){
+    wrap.innerHTML=`<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">لا توجد طرق دفع متاحة</div></div>`;
+    return;
+  }
+  const sel=selectedMethod?.id;
+  wrap.innerHTML=`<div class="methods-grid">${depositMethods.map(m=>{
+    const img=imgSrc(m.image);
+    return `
+    <div class="method-item ${sel===m.id?"selected":""}" id="mth-${m.id}" onclick="selectMethod(${m.id})">
+      <div class="method-img-wrap">
+        ${img?`<img src="${img}" alt="${H(m.title)}" loading="lazy"/>`:"💳"}
+        <div class="method-check">✓</div>
+      </div>
+      <div class="method-body">
+        <div class="method-title">${H(m.title)}</div>
+        <div class="method-rate">💱 ${Number(m.exchange_rate||0).toLocaleString()} ل.س = 1$</div>
+        ${m.code&&m.code!=="0"?`
+        <div class="method-code-box">
+          <div class="method-code-text">${H(m.code)}</div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyText('${H(m.code)}')">نسخ</button>
+        </div>`:""}
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function selectMethod(id){
+  selectedMethod=depositMethods.find(m=>m.id===id);
+  renderMethods();
+  // Show detail card
+  const det=document.getElementById("deposit-detail");
+  const m=selectedMethod;
+  const img=imgSrc(m.image);
+  det.style.display="block";
+  det.innerHTML=`
+    <div class="dep-method-detail">
+      <div class="dep-method-detail-img" style="${img?"":"display:flex;align-items:center;justify-content:center;font-size:48px;height:120px;"}">
+        ${img?`<img src="${img}" alt="${H(m.title)}"/>`:"💳"}
+      </div>
+      <div class="dep-method-detail-body">
+        <div class="dep-method-detail-title">${H(m.title)}</div>
+        ${m.description?`<div class="dep-method-detail-desc">${H(m.description)}</div>`:""}
+        <div class="dep-method-detail-desc" style="margin-top:6px">💱 سعر الصرف: <b>${Number(m.exchange_rate||0).toLocaleString()}</b> ل.س = 1$</div>
+        ${m.code&&m.code!=="0"?`
+        <div class="dep-code-full">
+          <div style="flex:1">
+            <div class="dep-code-full-label">📱 رقم التحويل</div>
+            <div class="dep-code-full-val">${H(m.code)}</div>
+          </div>
+          <button class="dep-code-copy" onclick="copyText('${H(m.code)}')">📋 نسخ الرقم</button>
+        </div>`:""}
+      </div>
+    </div>`;
+  document.getElementById("deposit-form-wrap").style.display="block";
+  document.getElementById("dep-amount").oninput=function(){
+    const v=parseFloat(this.value||"0");
+    if(v>0 && m.exchange_rate>0){
+      const usd=(v/m.exchange_rate).toFixed(2);
+      document.getElementById("dep-calc").textContent=`💵 يعادل تقريباً: ${usd} $`;
+    } else {
+      document.getElementById("dep-calc").textContent="";
+    }
+  };
+}
+
+async function submitDeposit(){
+  if(!userId){ toast("افتح من داخل تيليغرام"); return; }
+  if(!selectedMethod){ toast("اختر طريقة الدفع"); return; }
+  const amount=parseFloat(document.getElementById("dep-amount")?.value||"0");
+  const code=document.getElementById("dep-code")?.value.trim();
+  if(!amount||amount<=0){ toast("أدخل مبلغاً صحيحاً"); return; }
+  if(!code){ toast("أدخل رقم العملية"); return; }
+  try {
+    await api("/api/shop/deposits",{
+      method:"POST",
+      body:JSON.stringify({
+        user_id:userId, method_id:selectedMethod.id, amount_syp:amount,
+        transaction_code:code,
+        username:tgUser?.username||"",
+        full_name:((tgUser?.first_name||"")+" "+(tgUser?.last_name||"")).trim(),
+      })
+    });
+    toast("✅ تم إرسال طلب الشحن، سيتم مراجعته قريباً");
+    document.getElementById("dep-amount").value="";
+    document.getElementById("dep-code").value="";
+    selectedMethod=null;
+    document.getElementById("deposit-detail").style.display="none";
+    document.getElementById("deposit-form-wrap").style.display="none";
+    renderMethods();
+  } catch(e){ toast("❌ فشل إرسال الطلب"); }
+}
+
+// ════════════════════════════════════════════
+// PAGE: ORDERS
+// ════════════════════════════════════════════
+async function renderOrders(){
+  document.getElementById("page").innerHTML=`
+    <div class="page-header"><div><h2>📋 طلباتي</h2><div class="sub">سجل طلبات الشراء</div></div></div>
+    <div id="orders-wrap"><div class="spinner"></div></div>`;
+  if(!userId){
+    document.getElementById("orders-wrap").innerHTML=`<div class="empty"><div class="empty-icon">🔒</div><div class="empty-text">افتح من داخل تيليغرام</div></div>`;
+    return;
+  }
+  try {
+    const data=await api(`/api/shop/my-orders?userId=${userId}`);
+    const orders=data.orders||[];
+    if(!orders.length){
+      document.getElementById("orders-wrap").innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">لا توجد طلبات بعد</div></div>`;
+      return;
+    }
+    document.getElementById("orders-wrap").innerHTML=`
+      ${orders.map(o=>`
+        <div class="order-item">
+          <div class="order-row">
+            <div class="order-title">${H(o.product_name||"")} — ${H(o.category_name||"")}</div>
+            <span class="badge badge-${o.status}">${statusLabel(o.status)}</span>
+          </div>
+          <div class="order-row" style="margin-top:6px">
+            <div class="order-sub">🎮 ${H(o.player_id||"—")} × ${o.qty||1}</div>
+            <div class="order-price">${Number(o.price||0).toLocaleString()} $</div>
+          </div>
+          <div class="order-sub" style="margin-top:4px">🕐 ${formatDate(o.created_at)}</div>
+        </div>`).join("")}`;
+  } catch(e){
+    document.getElementById("orders-wrap").innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر التحميل</div></div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// PAGE: MY DEPOSITS
+// ════════════════════════════════════════════
+async function renderMyDeposits(){
+  document.getElementById("page").innerHTML=`
+    <div class="page-header"><div><h2>💰 سجل الشحن</h2><div class="sub">طلبات الإيداع</div></div></div>
+    <div id="deps-wrap"><div class="spinner"></div></div>`;
+  if(!userId){
+    document.getElementById("deps-wrap").innerHTML=`<div class="empty"><div class="empty-icon">🔒</div><div class="empty-text">افتح من داخل تيليغرام</div></div>`;
+    return;
+  }
+  try {
+    const data=await api(`/api/shop/my-deposits?userId=${userId}`);
+    const deps=data.deposits||[];
+    if(!deps.length){
+      document.getElementById("deps-wrap").innerHTML=`<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">لا توجد عمليات إيداع بعد</div></div>`;
+      return;
+    }
+    document.getElementById("deps-wrap").innerHTML=deps.map(d=>`
+      <div class="order-item">
+        <div class="order-row">
+          <div class="order-title">🏦 ${H(d.method_title||"—")}</div>
+          <span class="badge badge-${d.status}">${depositStatusLabel(d.status)}</span>
+        </div>
+        <div class="order-row" style="margin-top:6px">
+          <div class="order-sub">💵 ${Number(d.amount_syp||0).toLocaleString()} ل.س</div>
+          <div class="order-price">${Number(d.amount_usd||0).toFixed(2)} $</div>
+        </div>
+        ${d.transaction_code?`<div class="order-sub" style="margin-top:4px">📝 ${H(d.transaction_code)}</div>`:""}
+        <div class="order-sub" style="margin-top:4px">🕐 ${formatDate(d.created_at)}</div>
+      </div>`).join("");
+  } catch(e){
+    document.getElementById("deps-wrap").innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر التحميل</div></div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// PAGE: SUPPORT
+// ════════════════════════════════════════════
+async function renderSupport(){
+  let username="support";
+  try{ const s=await api("/api/shop/settings"); username=s.support_username||"support"; }catch(e){}
+  document.getElementById("page").innerHTML=`
+    <div class="page-header"><div><h2>📞 اتصل بنا</h2><div class="sub">نحن هنا لمساعدتك</div></div></div>
+    <div class="support-center">
+      <div class="support-icon">🎧</div>
+      <div class="support-title">الدعم الفني</div>
+      <div class="support-sub">إذا واجهت أي مشكلة في الطلبات أو الإيداع،<br/>تواصل معنا عبر تيليغرام.</div>
+      <a class="support-link" href="https://t.me/${H(username)}" target="_blank">💬 تواصل مع الدعم</a>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// PAGE: ADMIN
+// ════════════════════════════════════════════
+let adminTab="deposits";
+
+async function renderAdmin(){
+  if(!isAdmin){ navigate("home"); return; }
+  document.getElementById("page").innerHTML=`
+    <div class="page-header"><div><h2>🛡️ لوحة التحكم</h2><div class="sub">إدارة AZM Store</div></div></div>
+    <div class="admin-tabs" id="admin-tabs">
+      <button class="admin-tab" data-tab="deposits"   onclick="switchAdminTab('deposits')">💳 الإيداعات</button>
+      <button class="admin-tab" data-tab="users"      onclick="switchAdminTab('users')">👥 المستخدمون</button>
+      <button class="admin-tab" data-tab="sections"   onclick="switchAdminTab('sections')">📂 الأقسام</button>
+      <button class="admin-tab" data-tab="products"   onclick="switchAdminTab('products')">📦 المنتجات</button>
+      <button class="admin-tab" data-tab="providers"  onclick="switchAdminTab('providers')">🔗 المزودون</button>
+      <button class="admin-tab" data-tab="methods"    onclick="switchAdminTab('methods')">🏦 طرق الشحن</button>
+      <button class="admin-tab" data-tab="appearance" onclick="switchAdminTab('appearance')">🎨 المظهر</button>
+      <button class="admin-tab" data-tab="settings"   onclick="switchAdminTab('settings')">⚙️ الإعدادات</button>
+    </div>
+    <div id="admin-content"><div class="spinner"></div></div>`;
+  _highlightAdminTab();
+  await loadAdminContent();
+}
+
+function _highlightAdminTab(){
+  document.querySelectorAll(".admin-tab").forEach(el=>el.classList.toggle("active",el.dataset.tab===adminTab));
+}
+async function switchAdminTab(tab){
+  adminTab=tab; _highlightAdminTab();
+  document.getElementById("admin-content").innerHTML=`<div class="spinner"></div>`;
+  await loadAdminContent();
+}
+async function loadAdminContent(){
+  const wrap=document.getElementById("admin-content");
+  if(!wrap) return;
+  try {
+    if     (adminTab==="deposits")   await renderAdminDeposits(wrap);
+    else if(adminTab==="users")      await renderAdminUsers(wrap);
+    else if(adminTab==="sections")   await renderAdminSections(wrap);
+    else if(adminTab==="products")   await renderAdminProducts(wrap);
+    else if(adminTab==="providers")  await renderAdminProviders(wrap);
+    else if(adminTab==="methods")    await renderAdminMethods(wrap);
+    else if(adminTab==="appearance") await renderAppearanceTab(wrap);
+    else if(adminTab==="settings")   await renderSettingsTab(wrap);
+  } catch(e){ if(wrap) wrap.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر التحميل</div></div>`; }
+}
+
+// ── Admin: Deposits ─────────────────────────────────────────────
+async function renderAdminDeposits(wrap){
+  const [pending,all]=await Promise.all([api("/api/shop/admin/deposits?status=pending"),api("/api/shop/admin/deposits")]);
+  const approved=all.filter(d=>d.status==="approved").length;
+  const rejected=all.filter(d=>d.status==="rejected").length;
+  wrap.innerHTML=`
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val">${pending.length}</div><div class="stat-lbl">معلّقة</div></div>
+      <div class="stat-box"><div class="stat-val">${approved}</div><div class="stat-lbl">مقبولة</div></div>
+      <div class="stat-box"><div class="stat-val">${rejected}</div><div class="stat-lbl">مرفوضة</div></div>
+    </div>
+    ${!pending.length?`<div class="empty" style="padding:30px 20px"><div class="empty-icon">✅</div><div class="empty-text">لا توجد إيداعات معلّقة</div></div>`:
+    pending.map(d=>`
+      <div class="admin-item">
+        <div class="order-row">
+          <div class="order-title">👤 ${H(d.full_name||String(d.user_id))}</div>
+          <span class="badge badge-pending">معلّق</span>
+        </div>
+        ${d.username?`<div class="order-sub">@${H(d.username)}</div>`:""}
+        <div class="order-sub" style="margin-top:4px">💵 ${Number(d.amount_syp||0).toLocaleString()} ل.س ≈ ${Number(d.amount_usd||0).toFixed(2)} $</div>
+        <div class="order-sub">🏦 ${H(d.method_title||"")} | كود: <b>${H(d.transaction_code||"—")}</b></div>
+        <div class="order-sub">🕐 ${formatDate(d.created_at)}</div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-approve" onclick="approveDeposit(${d.id})">✅ قبول وإضافة رصيد</button>
+          <button class="admin-btn admin-btn-reject"  onclick="rejectDeposit(${d.id})">❌ رفض</button>
+        </div>
+      </div>`).join("")}`;
+}
+async function approveDeposit(id){
+  try{ await api(`/api/shop/admin/deposits/${id}/approve`,{method:"POST"}); toast("✅ تم قبول الإيداع"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل القبول"); }
+}
+async function rejectDeposit(id){
+  try{ await api(`/api/shop/admin/deposits/${id}/reject`,{method:"POST"}); toast("❌ تم رفض الإيداع"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الرفض"); }
+}
+
+// ── Admin: Users ─────────────────────────────────────────────────
+async function renderAdminUsers(wrap){
+  const users=await api("/api/shop/admin/users");
+  wrap.innerHTML=`
+    <div style="padding:10px 12px 0;font-size:13px;font-weight:800;color:var(--c-title)">👥 المستخدمون (${users.length})</div>
+    ${!users.length?`<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>`:
+    users.slice(0,100).map(u=>`
+      <div class="admin-item">
+        <div class="order-row">
+          <div style="font-size:12px;font-weight:700;color:var(--c-text)">👤 ${H(u.full_name||String(u.user_id))}${u.username?" (@"+H(u.username)+")":""}</div>
+          <div class="order-price">${Number(u.balance||0).toFixed(2)} $</div>
+        </div>
+        <div class="order-sub">🆔 ${u.user_id} | انضم: ${formatDate(u.first_seen)}</div>
+        <div class="admin-actions" style="margin-top:8px">
+          <div style="display:flex;gap:6px;flex:1">
+            <input class="setting-inp" id="bal-${u.user_id}" type="number" value="${Number(u.balance||0).toFixed(2)}" placeholder="الرصيد $" style="flex:1;margin:0"/>
+            <button class="admin-btn admin-btn-edit" style="flex:0.6;padding:8px" onclick="setUserBal('${H(u.user_id)}')">💾 تحديث</button>
+          </div>
+        </div>
+      </div>`).join("")}`;
+}
+async function setUserBal(uid){
+  const v=parseFloat(document.getElementById("bal-"+uid)?.value||"0");
+  try{ await api(`/api/shop/admin/users/${uid}/balance`,{method:"PATCH",body:JSON.stringify({balance:v})}); toast("✅ تم تحديث الرصيد"); }
+  catch(e){ toast("❌ فشل"); }
+}
+
+// ── Admin: Sections ──────────────────────────────────────────────
+async function renderAdminSections(wrap){
+  const secs=await api("/api/shop/sections");
+  wrap.innerHTML=`
+    <div style="padding:12px 12px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:800;color:var(--c-title)">📂 الأقسام (${secs.length})</div>
+      <button onclick="toggleAddSection()" style="background:var(--c-primary);color:#fff;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:800;border:none">+ إضافة</button>
+    </div>
+    <div id="add-section-form" style="display:none" class="section-form">
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px">➕ قسم جديد</div>
+      <input class="setting-inp" id="ns-title" placeholder="اسم القسم" style="margin-bottom:8px"/>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="setting-inp" id="ns-emoji" placeholder="إيموجي (مثال: 🎮)" style="flex:1;margin:0"/>
+        <input class="setting-inp" id="ns-order" type="number" placeholder="الترتيب" style="flex:1;margin:0"/>
+      </div>
+      <div id="ns-img-area"><div class="img-pick-zone" onclick="pickFile(u=>{window._nsImg=u;_renderNsImg()})">📷 صورة القسم (اختياري)</div></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="admin-btn admin-btn-approve" style="flex:2;padding:10px" onclick="submitNewSection()">✅ إضافة</button>
+        <button class="admin-btn admin-btn-neutral" style="flex:1;padding:10px" onclick="toggleAddSection()">إلغاء</button>
+      </div>
+    </div>
+    ${!secs.length?`<div class="empty"><div class="empty-icon">📂</div><div class="empty-text">لا توجد أقسام بعد</div></div>`:
+    secs.map(s=>{
+      const img=imgSrc(s.image);
+      return `
+      <div class="admin-item">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,rgba(var(--c-shadow),.3),rgba(0,0,0,.4));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+            ${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover"/>`:(s.emoji||"📂")}
+          </div>
+          <div><div class="order-title">${H(s.title)}</div><div class="order-sub">${s.active?"✅ نشط":"🚫 مخفي"} | ترتيب: ${s.sort_order||0}</div></div>
+        </div>
+        <div id="sec-edit-${s.id}" style="display:none;margin-top:10px">
+          <input class="setting-inp" id="se-title-${s.id}" value="${H(s.title)}" placeholder="الاسم" style="margin-bottom:6px"/>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input class="setting-inp" id="se-emoji-${s.id}" value="${H(s.emoji||"")}" placeholder="إيموجي" style="flex:1;margin:0"/>
+            <input class="setting-inp" id="se-order-${s.id}" type="number" value="${s.sort_order||0}" placeholder="الترتيب" style="flex:1;margin:0"/>
+          </div>
+          <div id="se-img-area-${s.id}" style="margin-bottom:8px">
+            ${img?`<div class="img-pick-wrap"><img src="${img}"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window['_seImg${s.id}']=u;_renderSeImg(${s.id})})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window['_seImg${s.id}']=null;_renderSeImg(${s.id})">✕</button></div></div>`:
+            `<div class="img-pick-zone" onclick="pickFile(u=>{window['_seImg${s.id}']=u;_renderSeImg(${s.id})})">📷 تغيير الصورة</div>`}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text2)">
+              <input type="checkbox" id="se-active-${s.id}" ${s.active?"checked":""}/> نشط
+            </label>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="admin-btn admin-btn-approve" style="flex:2" onclick="saveSection(${s.id})">💾 حفظ</button>
+            <button class="admin-btn admin-btn-reject"  style="flex:1" onclick="deleteSection(${s.id})">🗑️</button>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-edit"    onclick="toggleSecEdit(${s.id})">✏️ تعديل</button>
+        </div>
+      </div>`;
+    }).join("")}`;
+  window._nsImg="";
+}
+window._nsImg="";
+function _renderNsImg(){ const a=document.getElementById("ns-img-area"); if(!a)return; if(window._nsImg){const s=imgSrc(window._nsImg);a.innerHTML=`<div class="img-pick-wrap"><img src="${s}" style="height:80px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window._nsImg=u;_renderNsImg()})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window._nsImg='';_renderNsImg()">✕</button></div></div>`;}else{a.innerHTML=`<div class="img-pick-zone" onclick="pickFile(u=>{window._nsImg=u;_renderNsImg()})">📷 صورة القسم (اختياري)</div>`;} }
+function _renderSeImg(id){ const a=document.getElementById("se-img-area-"+id); if(!a)return; const v=window["_seImg"+id]; if(v){const s=imgSrc(v);a.innerHTML=`<div class="img-pick-wrap"><img src="${s}" style="height:70px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window['_seImg${id}']=u;_renderSeImg(${id})})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window['_seImg${id}']=null;_renderSeImg(${id})">✕</button></div></div>`;}else{a.innerHTML=`<div class="img-pick-zone" onclick="pickFile(u=>{window['_seImg${id}']=u;_renderSeImg(${id})})">📷 تغيير الصورة</div>`;} }
+function toggleAddSection(){ const f=document.getElementById("add-section-form"); if(f){const showing=f.style.display==="block";f.style.display=showing?"none":"block";if(!showing){window._nsImg="";_renderNsImg();}} }
+function toggleSecEdit(id){ const f=document.getElementById("sec-edit-"+id); if(f) f.style.display=f.style.display==="none"?"block":"none"; }
+async function submitNewSection(){
+  const title=document.getElementById("ns-title")?.value.trim();
+  const emoji=document.getElementById("ns-emoji")?.value.trim()||"";
+  const order=parseInt(document.getElementById("ns-order")?.value||"0");
+  if(!title){ toast("⚠️ أدخل اسم القسم"); return; }
+  try{ await api("/api/shop/sections/create",{method:"POST",body:JSON.stringify({title,emoji,image:window._nsImg||null,sort_order:order})}); toast("✅ تمت الإضافة"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الإضافة"); }
+}
+async function saveSection(id){
+  const title=document.getElementById("se-title-"+id)?.value.trim();
+  const emoji=document.getElementById("se-emoji-"+id)?.value.trim()||"";
+  const order=parseInt(document.getElementById("se-order-"+id)?.value||"0");
+  const active=document.getElementById("se-active-"+id)?.checked?1:0;
+  const newImg=window["_seImg"+id];
+  const payload={title,emoji,sort_order:order,active};
+  if(newImg!==undefined) payload.image=newImg||null;
+  try{ await api(`/api/shop/sections/${id}`,{method:"PATCH",body:JSON.stringify(payload)}); toast("✅ تم الحفظ"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الحفظ"); }
+}
+async function deleteSection(id){
+  if(!confirm("حذف القسم نهائياً؟")) return;
+  try{ await api(`/api/shop/sections/${id}`,{method:"DELETE"}); toast("🗑️ تم الحذف"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الحذف"); }
+}
+
+// ── Admin: Products ──────────────────────────────────────────────
+async function renderAdminProducts(wrap){
+  const [prods,secs]=await Promise.all([api("/api/shop/products"),api("/api/shop/sections")]);
+  wrap.innerHTML=`
+    <div style="padding:12px 12px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:800;color:var(--c-title)">📦 المنتجات (${prods.length})</div>
+      <button onclick="toggleAddProduct()" style="background:var(--c-primary);color:#fff;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:800;border:none">+ إضافة</button>
+    </div>
+    <div id="add-product-form" style="display:none" class="section-form">
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px">➕ منتج جديد</div>
+      <input class="setting-inp" id="np-name" placeholder="اسم المنتج" style="margin-bottom:8px"/>
+      <select class="setting-inp" id="np-sec" style="margin-bottom:8px">
+        <option value="">-- اختر القسم --</option>
+        ${secs.map(s=>`<option value="${s.id}">${H(s.emoji||"")} ${H(s.title)}</option>`).join("")}
+      </select>
+      <textarea class="setting-inp" id="np-desc" placeholder="وصف (اختياري)" rows="3" style="margin-bottom:8px;resize:none"></textarea>
+      <div id="np-img-area"><div class="img-pick-zone" onclick="pickFile(u=>{window._npImg=u;_renderNpImg()})">📷 اختر صورة (اختياري)</div></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="admin-btn admin-btn-approve" style="flex:2;padding:10px" onclick="submitNewProduct()">✅ إضافة</button>
+        <button class="admin-btn admin-btn-neutral" style="flex:1;padding:10px" onclick="toggleAddProduct()">إلغاء</button>
+      </div>
+    </div>
+    ${!prods.length?`<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">لا توجد منتجات بعد</div></div>`:
+    prods.map(p=>{
+      const img=imgSrc(p.image);
+      const sec=secs.find(s=>s.id===p.section_id);
+      return `
+      <div class="admin-item">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,rgba(var(--c-shadow),.3),rgba(0,0,0,.4));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+            ${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover"/>`:"🎮"}
+          </div>
+          <div><div class="order-title">${H(p.name)}</div><div class="order-sub">${sec?H(sec.emoji||"")+H(sec.title):"—"} | ${p.active?"✅":"🚫"}</div></div>
+        </div>
+        <div class="admin-actions" style="margin-top:10px">
+          <button class="admin-btn admin-btn-edit"   onclick="openProductAdmin(${p.id})">✏️ تعديل / فئات</button>
+          <button class="admin-btn admin-btn-reject" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
+        </div>
+      </div>`;
+    }).join("")}`;
+  window._npImg="";
+}
+window._npImg="";
+function _renderNpImg(){ const a=document.getElementById("np-img-area"); if(!a)return; if(window._npImg){const s=imgSrc(window._npImg);a.innerHTML=`<div class="img-pick-wrap"><img src="${s}" style="height:80px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window._npImg=u;_renderNpImg()})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window._npImg='';_renderNpImg()">✕</button></div></div>`;}else{a.innerHTML=`<div class="img-pick-zone" onclick="pickFile(u=>{window._npImg=u;_renderNpImg()})">📷 اختر صورة (اختياري)</div>`;} }
+function toggleAddProduct(){ const f=document.getElementById("add-product-form"); if(f) f.style.display=f.style.display==="none"?"block":"none"; }
+async function submitNewProduct(){
+  const name=document.getElementById("np-name")?.value.trim();
+  const sec=document.getElementById("np-sec")?.value;
+  if(!name||!sec){ toast("⚠️ اسم المنتج والقسم مطلوبان"); return; }
+  try{
+    await api("/api/shop/products/create",{method:"POST",body:JSON.stringify({
+      name, section_id:parseInt(sec),
+      description:document.getElementById("np-desc")?.value.trim()||"",
+      image:window._npImg||null,
+    })});
+    toast("✅ تمت الإضافة"); await loadAdminContent();
+  }catch(e){ toast("❌ فشل الإضافة"); }
+}
+async function deleteProduct(id){
+  if(!confirm("حذف المنتج نهائياً؟")) return;
+  try{ await api(`/api/shop/products/${id}`,{method:"DELETE"}); toast("🗑️ تم الحذف"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الحذف"); }
+}
+
+// ── Product Admin Detail ─────────────────────────────────────────
+async function openProductAdmin(pid){
+  const overlay=document.getElementById("product-sheet"),content=document.getElementById("sheet-content");
+  overlay.classList.add("open");
+  content.innerHTML=`<div class="sheet-handle" onclick="closeSheet()"></div><div class="sheet-header">⚙️ تحميل...</div><div class="spinner"></div>`;
+  const [prod,cats,secs]=await Promise.all([
+    api(`/api/shop/products/${pid}`),
+    api(`/api/shop/products/${pid}/categories`),
+    api("/api/shop/sections"),
+  ]);
+  const prodImg=imgSrc(prod.image);
+  content.innerHTML=`
+    <div class="sheet-handle" onclick="closeSheet()"></div>
+    <div class="sheet-header">⚙️ ${H(prod.name)}</div>
+    <div style="padding:14px">
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px">📝 بيانات المنتج</div>
+      <input class="setting-inp" id="ep-name" value="${H(prod.name)}" placeholder="الاسم" style="margin-bottom:8px"/>
+      <select class="setting-inp" id="ep-sec" style="margin-bottom:8px">
+        ${secs.map(s=>`<option value="${s.id}" ${prod.section_id===s.id?"selected":""}>${H(s.emoji||"")} ${H(s.title)}</option>`).join("")}
+      </select>
+      <textarea class="setting-inp" id="ep-desc" rows="2" style="margin-bottom:8px;resize:none">${H(prod.description||"")}</textarea>
+      <div id="ep-img-area" style="margin-bottom:8px">
+        ${prodImg?`<div class="img-pick-wrap"><img src="${prodImg}" style="height:80px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window._epImg=u;document.getElementById('ep-img-area').innerHTML=u?'<img src=\\''+u+'\\'style=\\'height:60px;border-radius:8px\\'/>':''})">📷 تغيير</button></div></div>`:
+        `<div class="img-pick-zone" onclick="pickFile(u=>{window._epImg=u;_renderEpImg(${pid})})">📷 اختر صورة</div>`}
+      </div>
+      <button style="width:100%;padding:11px;border-radius:12px;background:var(--header-grad);color:#fff;font-size:13px;font-weight:800;border:none;margin-bottom:18px" onclick="saveProductEdit(${pid})">💾 حفظ المنتج</button>
+
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px;padding-top:12px;border-top:1px solid var(--c-border)">
+        📋 الفئات / الأسعار (${cats.length})
+      </div>
+      ${cats.map(c=>`
+        <div style="background:var(--c-btn-bar);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--c-border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;color:var(--c-text)">${H(c.name)}</div>
+            <div style="color:var(--c-primary);font-weight:800">${c.price} $</div>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input class="setting-inp" id="ec-name-${c.id}" value="${H(c.name)}" placeholder="اسم" style="flex:2;margin:0"/>
+            <input class="setting-inp" id="ec-price-${c.id}" type="number" value="${c.price}" placeholder="$" style="flex:1;margin:0"/>
+          </div>
+          <input class="setting-inp" id="ec-label-${c.id}" value="${H(c.player_id_label||'معرف اللاعب')}" placeholder="تسمية معرف اللاعب" style="margin-bottom:6px"/>
+          <div style="display:flex;gap:6px">
+            <button class="admin-btn admin-btn-approve" onclick="saveCat(${c.id})" style="flex:2">💾 حفظ</button>
+            <button class="admin-btn admin-btn-reject" onclick="deleteCat(${c.id},${pid})" style="flex:1">🗑️</button>
+          </div>
+        </div>`).join("")}
+
+      <div style="padding-top:12px;border-top:1px solid var(--c-border)">
+        <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:8px">➕ فئة جديدة</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <select class="setting-inp" id="nc-type" style="flex:1;margin:0" onchange="toggleCatTypeFields()">
+            <option value="fixed">ثابتة</option>
+            <option value="counter">عداد</option>
+          </select>
+          <input class="setting-inp" id="nc-label" placeholder="معرف اللاعب / الحقل" style="flex:2;margin:0"/>
+        </div>
+        <input class="setting-inp" id="nc-name" placeholder="اسم الفئة (مثال: 100 جوهرة)" style="margin-bottom:6px"/>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="setting-inp" id="nc-price" type="number" placeholder="السعر $" style="flex:1;margin:0"/>
+        </div>
+        <div id="nc-counter-fields">
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input class="setting-inp" id="nc-minq" type="number" value="1" placeholder="أدنى كمية" style="flex:1;margin:0"/>
+            <input class="setting-inp" id="nc-maxq" type="number" value="1" placeholder="أقصى كمية" style="flex:1;margin:0"/>
+          </div>
+        </div>
+        <button style="width:100%;padding:11px;border-radius:12px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:800;border:none" onclick="addCat(${pid})">+ إضافة فئة</button>
+      </div>
+
+      <div style="padding-top:14px;border-top:1px solid var(--c-border);margin-top:6px">
+        <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:8px">🔗 ربط بمزود</div>
+        ${prod.provider_id?`<div style="background:rgba(var(--c-shadow),.2);border-radius:10px;padding:10px;margin-bottom:8px;font-size:11px">
+          <div style="color:var(--c-primary);font-weight:800">✅ مرتبط بمزود</div>
+          <div style="color:var(--c-text2);margin-top:3px">المنتج: <b>${H(prod.provider_product_id||"")}</b></div>
+          <div style="color:var(--c-text2)">النوع: <b>${prod.product_type==="counter"?"عداد":"ثابتة"}</b></div>
+        </div>`:""}
+        <div id="prov-link-area-${pid}">
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <select class="setting-inp" id="pl-prov-${pid}" style="flex:1;margin:0" onchange="onProviderSelectChange(${pid})">
+              <option value="">— اختر المزود —</option>
+              <option value="${prod.provider_id||""}" selected>${prod.provider_id?"المزود الحالي":""}</option>
+            </select>
+            <select class="setting-inp" id="pl-type-${pid}" style="flex:1;margin:0">
+              <option value="fixed" ${prod.product_type!=="counter"?"selected":""}>ثابتة</option>
+              <option value="counter" ${prod.product_type==="counter"?"selected":""}>عداد</option>
+            </select>
+          </div>
+          <select class="setting-inp" id="pl-prod-${pid}" style="margin-bottom:8px">
+            <option value="">— اختر منتج المزود —</option>
+            ${prod.provider_product_id?`<option value="${H(prod.provider_product_id)}" selected>${H(prod.provider_product_id)}</option>`:""}
+          </select>
+          <div style="display:flex;gap:6px">
+            <button class="admin-btn" style="flex:1;background:rgba(var(--c-shadow),.3)" onclick="fetchProviderListForProduct(${pid})">📋 جلب المنتجات</button>
+            <button class="admin-btn admin-btn-approve" style="flex:1" onclick="saveProductProviderLink(${pid})">🔗 حفظ الربط</button>
+          </div>
+          <div style="margin-top:6px">
+            <button class="admin-btn" style="width:100%;background:var(--c-accent)" onclick="fetchPricesFromProvider(${pid})">💲 جلب الأسعار من المزود</button>
+          </div>
+          <div id="pl-result-${pid}" style="margin-top:6px"></div>
+        </div>
+      </div>
+    </div>`;
+  window._epImg=undefined;
+  // auto-load providers into the link dropdown
+  loadProvidersIntoProductSheet(pid).catch(()=>{});
+}
+window._epImg=undefined;
+async function loadProvidersIntoProductSheet(pid){
+  const provSel=document.getElementById("pl-prov-"+pid);
+  if(!provSel) return;
+  try{
+    const providers=await api("/api/shop/providers");
+    const curVal=provSel.value;
+    provSel.innerHTML=`<option value="">— اختر المزود —</option>`
+      +providers.map(p=>`<option value="${p.id}" ${String(p.id)===String(curVal)?"selected":""}>${H(p.name)}</option>`).join("");
+  }catch(e){}
+}
+function _renderEpImg(pid){ const a=document.getElementById("ep-img-area"); if(!a)return; if(window._epImg){const s=imgSrc(window._epImg);a.innerHTML=`<div class="img-pick-wrap"><img src="${s}" style="height:80px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window._epImg=u;_renderEpImg(${pid})})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window._epImg=null;_renderEpImg(${pid})">✕</button></div></div>`;}else{a.innerHTML=`<div class="img-pick-zone" onclick="pickFile(u=>{window._epImg=u;_renderEpImg(${pid})})">📷 اختر صورة</div>`;} }
+async function saveProductEdit(pid){
+  const payload={
+    name:document.getElementById("ep-name")?.value.trim(),
+    section_id:parseInt(document.getElementById("ep-sec")?.value||"0"),
+    description:document.getElementById("ep-desc")?.value.trim()||"",
+  };
+  if(window._epImg!==undefined) payload.image=window._epImg||null;
+  try{ await api(`/api/shop/products/${pid}`,{method:"PATCH",body:JSON.stringify(payload)}); toast("✅ تم حفظ المنتج"); }
+  catch(e){ toast("❌ فشل الحفظ"); }
+}
+async function saveCat(cid){
+  try{
+    await api(`/api/shop/categories/${cid}`,{method:"PATCH",body:JSON.stringify({
+      name:document.getElementById("ec-name-"+cid)?.value.trim(),
+      price:parseFloat(document.getElementById("ec-price-"+cid)?.value||"0"),
+      player_id_label:document.getElementById("ec-label-"+cid)?.value.trim()||"معرف اللاعب",
+    })});
+    toast("✅ تم حفظ الفئة");
+  }catch(e){ toast("❌ فشل الحفظ"); }
+}
+async function deleteCat(cid,pid){
+  if(!confirm("حذف الفئة نهائياً؟")) return;
+  try{ await api(`/api/shop/categories/${cid}`,{method:"DELETE"}); toast("🗑️ تم الحذف"); openProductAdmin(pid); }
+  catch(e){ toast("❌ فشل الحذف"); }
+}
+function toggleCatTypeFields(){
+  const t=document.getElementById("nc-type")?.value;
+  const cf=document.getElementById("nc-counter-fields");
+  if(cf) cf.style.display=(t==="counter")?"block":"none";
+}
+
+async function addCat(pid){
+  const name=document.getElementById("nc-name")?.value.trim();
+  const price=parseFloat(document.getElementById("nc-price")?.value||"0");
+  const label=document.getElementById("nc-label")?.value.trim()||"معرف اللاعب";
+  const catType=document.getElementById("nc-type")?.value||"fixed";
+  const minQ=parseInt(document.getElementById("nc-minq")?.value||"1");
+  const maxQ=parseInt(document.getElementById("nc-maxq")?.value||"1");
+  if(!name||isNaN(price)){ toast("⚠️ أكمل حقول الفئة"); return; }
+  try{
+    await api(`/api/shop/products/${pid}/categories/create`,{method:"POST",
+      body:JSON.stringify({name,price,player_id_label:label,cat_type:catType,
+        min_qty:catType==="counter"?minQ:1, max_qty:catType==="counter"?maxQ:1})});
+    toast("✅ تمت الإضافة"); openProductAdmin(pid);
+  }catch(e){ toast("❌ فشل الإضافة"); }
+}
+
+// ── Provider link helpers (used inside product admin sheet) ──────
+async function fetchProviderListForProduct(pid){
+  const provSel=document.getElementById("pl-prov-"+pid);
+  const prodSel=document.getElementById("pl-prod-"+pid);
+  const box=document.getElementById("pl-result-"+pid);
+  if(!provSel||!prodSel) return;
+  const provId=provSel.value;
+  if(!provId){ toast("⚠️ اختر مزوداً أولاً"); return; }
+  if(box) box.innerHTML=`<div style="font-size:11px;color:var(--c-text3)">⏳ جلب المنتجات...</div>`;
+  try{
+    const r=await api(`/api/shop/providers/${provId}/products`);
+    const prods=r.products||[];
+    _providerProducts[provId]=prods;
+    prodSel.innerHTML=`<option value="">— اختر منتج المزود —</option>`
+      +prods.map(p=>`<option value="${p.id}" data-type="${p.product_type||"fixed"}" data-price="${p.price||0}" data-min="${p.qty_values?.min||1}" data-max="${p.qty_values?.max||1}">[${p.product_type==="amount"?"عداد":"ثابت"}] ${H(p.name)} — $${p.price||0}</option>`).join("");
+    if(box) box.innerHTML=`<div style="font-size:11px;color:#4caf50">✅ ${prods.length} منتج</div>`;
+  }catch(e){
+    if(box) box.innerHTML=`<div style="font-size:11px;color:#f44336">❌ فشل جلب المنتجات</div>`;
+  }
+}
+
+async function onProviderSelectChange(pid){
+  // Pre-fill provider select with real providers when opened
+  const provSel=document.getElementById("pl-prov-"+pid);
+  if(!provSel||provSel.options.length>2) return;
+  try{
+    const providers=await api("/api/shop/providers");
+    provSel.innerHTML=`<option value="">— اختر المزود —</option>`
+      +providers.map(p=>`<option value="${p.id}">${H(p.name)}</option>`).join("");
+  }catch(e){}
+}
+
+async function saveProductProviderLink(pid){
+  const provId=document.getElementById("pl-prov-"+pid)?.value;
+  const provProdId=document.getElementById("pl-prod-"+pid)?.value;
+  const provType=document.getElementById("pl-type-"+pid)?.value||"fixed";
+  const box=document.getElementById("pl-result-"+pid);
+  if(!provProdId){ toast("⚠️ اختر منتج المزود أولاً"); return; }
+  try{
+    await api(`/api/shop/products/${pid}`,{method:"PATCH",body:JSON.stringify({
+      provider_id:provId?parseInt(provId):null,
+      provider_product_id:String(provProdId),
+      product_type:provType,
+    })});
+    toast("✅ تم حفظ الربط");
+    if(box) box.innerHTML=`<div style="font-size:11px;color:#4caf50">✅ تم الربط — المنتج: ${H(String(provProdId))} | النوع: ${provType==="counter"?"عداد":"ثابتة"}</div>`;
+  }catch(e){ toast("❌ فشل حفظ الربط"); }
+}
+
+async function fetchPricesFromProvider(pid){
+  const box=document.getElementById("pl-result-"+pid);
+  // Get product info
+  let prod;
+  try{ prod=await api(`/api/shop/products/${pid}`); }catch(e){ toast("❌ فشل جلب المنتج"); return; }
+  if(!prod.provider_id||!prod.provider_product_id){
+    toast("⚠️ اربط المنتج بمزود أولاً");
+    return;
+  }
+  if(box) box.innerHTML=`<div style="font-size:11px;color:var(--c-text3)">⏳ جلب الأسعار...</div>`;
+  try{
+    const r=await api(`/api/shop/providers/${prod.provider_id}/products/${prod.provider_product_id}`);
+    const p=r.product;
+    if(!p){ if(box) box.innerHTML=`<div style="font-size:11px;color:#f44336">❌ المنتج غير موجود في المزود</div>`; return; }
+    const pType=p.product_type||"package";
+    const price=parseFloat(p.price||0);
+    let catCreated=0;
+    if(pType==="amount"){
+      // counter product
+      const minQ=p.qty_values?.min||1;
+      const maxQ=p.qty_values?.max||99999;
+      const catName=`${prod.name} (عداد)`;
+      await api(`/api/shop/products/${pid}/categories/create`,{method:"POST",body:JSON.stringify({
+        name:catName, price:price, cat_type:"counter", min_qty:minQ, max_qty:maxQ, player_id_label:"معرف اللاعب"
+      })});
+      catCreated++;
+      // update product type
+      await api(`/api/shop/products/${pid}`,{method:"PATCH",body:JSON.stringify({product_type:"counter"})});
+    } else {
+      // package/fixed product
+      const catName=p.name||prod.name;
+      await api(`/api/shop/products/${pid}/categories/create`,{method:"POST",body:JSON.stringify({
+        name:catName, price:price, cat_type:"fixed", min_qty:1, max_qty:1, player_id_label:"معرف اللاعب", price_usd:price
+      })});
+      catCreated++;
+      await api(`/api/shop/products/${pid}`,{method:"PATCH",body:JSON.stringify({product_type:"fixed"})});
+    }
+    if(box) box.innerHTML=`<div style="font-size:11px;color:#4caf50">✅ تمت إضافة ${catCreated} فئة — السعر: $${price} | النوع: ${pType==="amount"?"عداد":"ثابتة"}</div>`;
+    toast("✅ تم جلب الأسعار وإضافة الفئات");
+    // reload product admin to show new categories
+    setTimeout(()=>openProductAdmin(pid),800);
+  }catch(e){
+    if(box) box.innerHTML=`<div style="font-size:11px;color:#f44336">❌ فشل جلب الأسعار</div>`;
+    toast("❌ فشل جلب الأسعار");
+  }
+}
+
+// ── Admin: Providers ─────────────────────────────────────────────
+let _providerProducts = {};  // cache: provId -> [{id, name, category_name, price, product_type, qty_values, available}]
+
+async function renderAdminProviders(wrap){
+  const providers = await api("/api/shop/providers");
+  wrap.innerHTML=`
+    <div style="padding:12px 12px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:800;color:var(--c-title)">🔗 مزودو الخدمة (${providers.length})</div>
+      <button onclick="toggleAddProvider()" style="background:var(--c-primary);color:#fff;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:800;border:none">+ إضافة</button>
+    </div>
+    <div id="add-provider-form" style="display:none" class="section-form">
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px">➕ مزود جديد</div>
+      <input class="setting-inp" id="np-prov-name"  placeholder="اسم المزود (مثال: MHD Store)" style="margin-bottom:8px"/>
+      <input class="setting-inp" id="np-prov-url"   value="https://mhd-game.com/api" placeholder="رابط الـ API" style="margin-bottom:8px"/>
+      <input class="setting-inp" id="np-prov-token" placeholder="API Token" style="margin-bottom:8px"/>
+      <div style="display:flex;gap:8px">
+        <button class="admin-btn admin-btn-approve" style="flex:2;padding:10px" onclick="submitNewProvider()">✅ إضافة</button>
+        <button class="admin-btn admin-btn-neutral" style="flex:1;padding:10px" onclick="toggleAddProvider()">إلغاء</button>
+      </div>
+    </div>
+    ${!providers.length?`<div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">لا يوجد مزودون بعد<br><span style="font-size:11px;color:var(--c-text3)">أضف مزوداً للربط بـ API المنتجات</span></div></div>`:
+    providers.map(p=>`
+      <div class="admin-item">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div class="order-title">🔗 ${H(p.name)}</div>
+            <div class="order-sub" style="font-size:10px;word-break:break-all">${H(p.api_url)}</div>
+            <div class="order-sub" style="font-size:10px;color:var(--c-text3)">Token: ${H((p.api_token||"").slice(0,20))}…</div>
+          </div>
+          <div style="font-size:18px">${p.active?"✅":"🚫"}</div>
+        </div>
+        <div id="prov-result-${p.id}" style="margin-bottom:8px"></div>
+        <div id="prov-products-${p.id}" style="margin-bottom:8px"></div>
+        <div id="prov-edit-${p.id}" style="display:none">
+          <input class="setting-inp" id="pe-name-${p.id}"  value="${H(p.name)}"    placeholder="الاسم"      style="margin-bottom:6px"/>
+          <input class="setting-inp" id="pe-url-${p.id}"   value="${H(p.api_url)}" placeholder="رابط API"   style="margin-bottom:6px"/>
+          <input class="setting-inp" id="pe-token-${p.id}" value="${H(p.api_token)}" placeholder="Token"    style="margin-bottom:6px"/>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text2)">
+              <input type="checkbox" id="pe-active-${p.id}" ${p.active?"checked":""}/> نشط
+            </label>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="admin-btn admin-btn-approve" style="flex:2" onclick="saveProvider(${p.id})">💾 حفظ</button>
+            <button class="admin-btn admin-btn-reject"  style="flex:1" onclick="deleteProvider(${p.id})">🗑️</button>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" style="flex:1;background:var(--c-accent)" onclick="testProvider(${p.id})">🔍 اختبار</button>
+          <button class="admin-btn" style="flex:1;background:rgba(var(--c-shadow),.3)" onclick="loadProviderProducts(${p.id})">📦 المنتجات</button>
+          <button class="admin-btn admin-btn-edit" style="flex:1" onclick="toggleProviderEdit(${p.id})">✏️</button>
+        </div>
+      </div>`).join("")}`;
+}
+
+function toggleAddProvider(){
+  const f=document.getElementById("add-provider-form");
+  if(f) f.style.display=f.style.display==="block"?"none":"block";
+}
+function toggleProviderEdit(id){
+  const f=document.getElementById("prov-edit-"+id);
+  if(f) f.style.display=f.style.display==="none"?"block":"none";
+}
+
+async function submitNewProvider(){
+  const name=document.getElementById("np-prov-name")?.value.trim();
+  const url=document.getElementById("np-prov-url")?.value.trim()||"https://mhd-game.com/api";
+  const token=document.getElementById("np-prov-token")?.value.trim();
+  if(!name||!token){ toast("⚠️ الاسم والـ Token مطلوبان"); return; }
+  try{
+    await api("/api/shop/providers/create",{method:"POST",body:JSON.stringify({name,api_url:url,api_token:token})});
+    toast("✅ تمت الإضافة"); await loadAdminContent();
+  }catch(e){ toast("❌ فشل الإضافة"); }
+}
+
+async function saveProvider(id){
+  try{
+    await api(`/api/shop/providers/${id}`,{method:"PATCH",body:JSON.stringify({
+      name:  document.getElementById("pe-name-"+id)?.value.trim(),
+      api_url:  document.getElementById("pe-url-"+id)?.value.trim(),
+      api_token:document.getElementById("pe-token-"+id)?.value.trim(),
+      active:document.getElementById("pe-active-"+id)?.checked?1:0,
+    })});
+    toast("✅ تم الحفظ"); await loadAdminContent();
+  }catch(e){ toast("❌ فشل الحفظ"); }
+}
+
+async function deleteProvider(id){
+  if(!confirm("حذف المزود نهائياً؟")) return;
+  try{ await api(`/api/shop/providers/${id}`,{method:"DELETE"}); toast("🗑️ تم الحذف"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الحذف"); }
+}
+
+async function testProvider(id){
+  const box=document.getElementById("prov-result-"+id);
+  if(!box) return;
+  box.innerHTML=`<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px;font-size:11px;color:var(--c-text2)">⏳ جار الاختبار...</div>`;
+  try{
+    const r=await api(`/api/shop/providers/${id}/test`);
+    if(r.ok){
+      const acct=r.account||{};
+      const email=acct.email||acct.login||acct.username||"—";
+      const balance=acct.balance!==undefined?acct.balance:acct.credits;
+      let msg=r.message||"✅ الاتصال يعمل";
+      let details="";
+      if(email&&email!=="—") details+=`📧 ${H(email)} `;
+      if(balance!==undefined) details+=`💰 ${balance}`;
+      box.innerHTML=`<div style="background:rgba(0,128,0,.15);border-radius:8px;padding:8px;font-size:11px;color:#4caf50">
+        <div style="font-weight:800">${msg}</div>
+        ${details?`<div style="margin-top:4px;color:var(--c-text2)">${details}</div>`:""}
+      </div>`;
+    } else {
+      box.innerHTML=`<div style="background:rgba(200,0,0,.12);border-radius:8px;padding:8px;font-size:11px;color:#f44336">
+        ❌ ${H(r.error||"فشل الاتصال")}
+      </div>`;
+    }
+  }catch(e){
+    box.innerHTML=`<div style="background:rgba(200,0,0,.12);border-radius:8px;padding:8px;font-size:11px;color:#f44336">❌ خطأ في الاتصال</div>`;
+  }
+}
+
+async function loadProviderProducts(id){
+  const box=document.getElementById("prov-products-"+id);
+  if(!box) return;
+  box.innerHTML=`<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px;font-size:11px;color:var(--c-text2)">⏳ جار جلب المنتجات...</div>`;
+  try{
+    const r=await api(`/api/shop/providers/${id}/products`);
+    const prods=r.products||[];
+    if(!prods.length){
+      box.innerHTML=`<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px;font-size:11px;color:var(--c-text2)">لا توجد منتجات</div>`;
+      return;
+    }
+    _providerProducts[id]=prods;
+    // group by category
+    const cats={};
+    for(const p of prods){ const c=p.category_name||"أخرى"; (cats[c]=cats[c]||[]).push(p); }
+    const catHtml=Object.entries(cats).map(([cat,items])=>`
+      <div style="margin-bottom:6px">
+        <div style="font-size:10px;font-weight:800;color:var(--c-primary);padding:2px 0">${H(cat)} (${items.length})</div>
+        ${items.slice(0,5).map(p=>`
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--c-text2);padding:2px 4px;border-radius:4px;background:rgba(0,0,0,.1)">
+            <span>${H(p.name)} <span style="color:${p.available?"#4caf50":"#f44336"}">${p.available?"✓":"✗"}</span></span>
+            <span>${p.product_type==="amount"?"عداد":"ثابت"} | $${p.price||0}</span>
+          </div>`).join("")}
+        ${items.length>5?`<div style="font-size:10px;color:var(--c-text3);padding:2px 4px">…و ${items.length-5} أخرى</div>`:""}
+      </div>`).join("");
+    box.innerHTML=`<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:10px;max-height:200px;overflow-y:auto">
+      <div style="font-size:11px;font-weight:800;color:var(--c-title);margin-bottom:6px">📦 ${prods.length} منتج من المزود</div>
+      ${catHtml}
+    </div>`;
+  }catch(e){
+    box.innerHTML=`<div style="background:rgba(200,0,0,.12);border-radius:8px;padding:8px;font-size:11px;color:#f44336">❌ فشل جلب المنتجات</div>`;
+  }
+}
+
+// ── Admin: Deposit Methods ───────────────────────────────────────
+async function renderAdminMethods(wrap){
+  const methods=await api("/api/shop/deposit-methods/all");
+  wrap.innerHTML=`
+    <div style="padding:12px 12px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:800;color:var(--c-title)">🏦 طرق الشحن (${methods.length})</div>
+      <button onclick="toggleAddMethod()" style="background:var(--c-primary);color:#fff;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:800;border:none">+ إضافة</button>
+    </div>
+    <div id="add-method-form" style="display:none" class="section-form">
+      <div style="font-size:12px;font-weight:800;color:var(--c-title);margin-bottom:10px">➕ طريقة جديدة</div>
+      <input class="setting-inp" id="nm-title" placeholder="اسم الطريقة" style="margin-bottom:8px"/>
+      <input class="setting-inp" id="nm-desc"  placeholder="الوصف (مثال: سيريتل كاش)" style="margin-bottom:8px"/>
+      <input class="setting-inp" id="nm-code"  placeholder="رقم التحويل / الكود" style="margin-bottom:8px"/>
+      <input class="setting-inp" id="nm-rate"  type="number" placeholder="سعر الصرف (ل.س = 1$)" style="margin-bottom:8px"/>
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--c-text3);margin-bottom:6px">صورة الطريقة (اختياري)</div>
+        <div id="nm-img-area"><div class="img-pick-zone" onclick="pickFile(u=>{window._nmImg=u;_renderNmImg()})">📷 اختر صورة</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="admin-btn admin-btn-approve" style="flex:2;padding:10px" onclick="submitNewMethod()">✅ إضافة</button>
+        <button class="admin-btn admin-btn-neutral" style="flex:1;padding:10px" onclick="toggleAddMethod()">إلغاء</button>
+      </div>
+    </div>
+    ${!methods.length?`<div class="empty"><div class="empty-icon">🏦</div><div class="empty-text">لا توجد طرق شحن بعد</div></div>`:
+    methods.map(m=>{
+      const img=imgSrc(m.image);
+      return `
+      <div class="admin-item">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+          <div style="width:52px;height:44px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,rgba(var(--c-shadow),.3),rgba(0,0,0,.4));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">
+            ${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover"/>`:"💳"}
+          </div>
+          <div>
+            <div class="order-title">${H(m.title)}</div>
+            <div class="order-sub">💱 ${Number(m.exchange_rate||0).toLocaleString()} ل.س | ${m.active?"✅":"🚫"}</div>
+            ${m.code?`<div class="order-sub">📱 ${H(m.code)}</div>`:""}
+          </div>
+        </div>
+        <div id="em-${m.id}" style="display:none">
+          <input class="setting-inp" id="em-title-${m.id}" value="${H(m.title)}"       placeholder="اسم الطريقة"  style="margin-bottom:6px"/>
+          <input class="setting-inp" id="em-desc-${m.id}"  value="${H(m.description||"")}" placeholder="الوصف"   style="margin-bottom:6px"/>
+          <input class="setting-inp" id="em-code-${m.id}"  value="${H(m.code||"")}"     placeholder="رقم التحويل" style="margin-bottom:6px"/>
+          <input class="setting-inp" id="em-rate-${m.id}"  type="number" value="${m.exchange_rate||0}" placeholder="سعر الصرف" style="margin-bottom:8px"/>
+          <div id="em-img-area-${m.id}" style="margin-bottom:8px">
+            ${img?`<div class="img-pick-wrap"><img src="${img}" style="height:70px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>uploadMethodImg(${m.id},u))">📷 تغيير الصورة</button></div></div>`:
+            `<div class="img-pick-zone" onclick="pickFile(u=>uploadMethodImg(${m.id},u))">📷 رفع صورة</div>`}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text2)">
+              <input type="checkbox" id="em-active-${m.id}" ${m.active?"checked":""}/> نشط
+            </label>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="admin-btn admin-btn-approve" style="flex:2" onclick="saveMethod(${m.id})">💾 حفظ</button>
+            <button class="admin-btn admin-btn-reject"  style="flex:1" onclick="deleteMethod(${m.id})">🗑️</button>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-edit" onclick="toggleMethodEdit(${m.id})">✏️ تعديل</button>
+        </div>
+      </div>`;
+    }).join("")}`;
+  window._nmImg="";
+}
+window._nmImg="";
+function _renderNmImg(){ const a=document.getElementById("nm-img-area"); if(!a)return; if(window._nmImg){const s=imgSrc(window._nmImg);a.innerHTML=`<div class="img-pick-wrap"><img src="${s}" style="height:80px;width:100%;object-fit:cover"/><div class="img-pick-overlay"><button style="background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer" onclick="pickFile(u=>{window._nmImg=u;_renderNmImg()})">📷 تغيير</button><button style="background:rgba(200,30,30,.8);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer" onclick="window._nmImg='';_renderNmImg()">✕</button></div></div>`;}else{a.innerHTML=`<div class="img-pick-zone" onclick="pickFile(u=>{window._nmImg=u;_renderNmImg()})">📷 اختر صورة</div>`;} }
+function toggleAddMethod(){ const f=document.getElementById("add-method-form"); if(f){const o=f.style.display==="block";f.style.display=o?"none":"block";if(!o){window._nmImg="";_renderNmImg();}} }
+function toggleMethodEdit(id){ const f=document.getElementById("em-"+id); if(f) f.style.display=f.style.display==="none"?"block":"none"; }
+async function submitNewMethod(){
+  const title=document.getElementById("nm-title")?.value.trim();
+  const desc =document.getElementById("nm-desc")?.value.trim();
+  const code =document.getElementById("nm-code")?.value.trim();
+  const rate =parseFloat(document.getElementById("nm-rate")?.value||"0");
+  if(!title||!code||!rate){ toast("⚠️ أكمل الحقول المطلوبة"); return; }
+  try{
+    await api("/api/shop/deposit-methods/create",{method:"POST",
+      body:JSON.stringify({title,description:desc,code,exchange_rate:rate,image:window._nmImg||null})});
+    toast("✅ تمت الإضافة"); window._nmImg=""; await loadAdminContent();
+  }catch(e){ toast("❌ فشل الإضافة"); }
+}
+async function saveMethod(id){
+  const active=document.getElementById("em-active-"+id)?.checked?1:0;
+  try{
+    await api(`/api/shop/deposit-methods/${id}`,{method:"PATCH",body:JSON.stringify({
+      title:document.getElementById("em-title-"+id)?.value.trim(),
+      description:document.getElementById("em-desc-"+id)?.value.trim(),
+      code:document.getElementById("em-code-"+id)?.value.trim(),
+      exchange_rate:parseFloat(document.getElementById("em-rate-"+id)?.value||"0"),
+      active,
+    })});
+    toast("✅ تم الحفظ"); await loadAdminContent();
+  }catch(e){ toast("❌ فشل الحفظ"); }
+}
+async function uploadMethodImg(id,url){
+  try{ await api(`/api/shop/deposit-methods/${id}`,{method:"PATCH",body:JSON.stringify({image:url})}); toast("✅ تم رفع الصورة"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل رفع الصورة"); }
+}
+async function deleteMethod(id){
+  if(!confirm("حذف طريقة الشحن نهائياً؟")) return;
+  try{ await api(`/api/shop/deposit-methods/${id}`,{method:"DELETE"}); toast("🗑️ تم الحذف"); await loadAdminContent(); }
+  catch(e){ toast("❌ فشل الحذف"); }
+}
+
+// ── Admin: Appearance ────────────────────────────────────────────
+async function renderAppearanceTab(wrap){
+  try {
+    const s=await api("/api/shop/settings");
+    if(s.theme_json){ try{ const t=JSON.parse(s.theme_json); if(t?.primary) _theme=t; }catch(e){} }
+    if(s.bg_image!==undefined){ _bgImg=s.bg_image||""; }
+  }catch(e){}
+  const prevGrad=`linear-gradient(135deg,${_theme.dark},${_theme.primary})`;
+  wrap.innerHTML=`
+    <!-- معاينة حية -->
+    <div class="theme-preview">
+      ${_bgImg?`<img src="${imgSrc(_bgImg)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0"/>`:
+      `<div style="position:absolute;inset:0;background:${prevGrad}"></div>`}
+      <div style="position:absolute;inset:0;background:${_bgImg?prevGrad.replace(')',',0.75)'):'transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:1">
+        <div style="font-size:26px">🛒</div>
+        <div style="font-size:13px;font-weight:800;color:#fff">AZM Store</div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <div style="background:${_theme.accent};border-radius:10px;padding:5px 12px;font-size:11px;font-weight:700;color:#fff">الرئيسية</div>
+          <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:5px 12px;font-size:11px;font-weight:700;color:#fff">طلباتي</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ثيمات جاهزة -->
+    <div style="padding:14px 12px 6px;font-size:13px;font-weight:800;color:var(--c-title)">🎨 ثيمات جاهزة</div>
+    <div class="color-grid">
+      ${PRESET_THEMES.map((t,i)=>`
+        <div onclick="applyPresetTheme(${i})" style="cursor:pointer;border-radius:12px;overflow:hidden;border:2px solid ${_theme.primary===t.primary?"var(--c-primary)":"transparent"};transition:all .15s">
+          <div style="height:36px;background:linear-gradient(135deg,${t.dark},${t.primary})"></div>
+          <div style="background:${t.bg};padding:3px 2px;text-align:center;font-size:9px;font-weight:700;color:${t.primary};line-height:1.2">${t.label}</div>
+        </div>`).join("")}
+    </div>
+
+    <!-- ألوان مخصصة -->
+    <div style="height:1px;background:var(--c-border);margin:16px 12px 0"></div>
+    <div style="padding:14px 12px 8px;font-size:13px;font-weight:800;color:var(--c-title)">🖌️ ألوان مخصصة</div>
+    <div style="padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div class="setting-label">اللون الرئيسي</div>
+        <input type="color" id="cp-primary" value="${_theme.primary}" oninput="previewCustomColors()" style="width:100%;height:44px;border-radius:10px;border:2px solid var(--c-border);cursor:pointer;padding:3px"/></div>
+      <div><div class="setting-label">لون الخلفية</div>
+        <input type="color" id="cp-bg"      value="${_theme.bg}"      oninput="previewCustomColors()" style="width:100%;height:44px;border-radius:10px;border:2px solid var(--c-border);cursor:pointer;padding:3px"/></div>
+      <div><div class="setting-label">اللون الداكن</div>
+        <input type="color" id="cp-dark"    value="${_theme.dark}"    oninput="previewCustomColors()" style="width:100%;height:44px;border-radius:10px;border:2px solid var(--c-border);cursor:pointer;padding:3px"/></div>
+      <div><div class="setting-label">لون التأكيد</div>
+        <input type="color" id="cp-accent"  value="${_theme.accent}"  oninput="previewCustomColors()" style="width:100%;height:44px;border-radius:10px;border:2px solid var(--c-border);cursor:pointer;padding:3px"/></div>
+    </div>
+
+    <!-- ألوان سريعة للخلفية -->
+    <div style="padding:14px 12px 6px;font-size:12px;font-weight:700;color:var(--c-text2)">🎨 خلفيات سريعة</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;padding:0 12px 4px">
+      ${PRESET_COLORS.map(c=>`<div class="color-swatch ${_theme.bg===c?"selected":""}" style="background:${c};width:44px;height:44px" onclick="setQuickBg('${c}')"></div>`).join("")}
+    </div>
+
+    <!-- صورة الخلفية -->
+    <div style="height:1px;background:var(--c-border);margin:16px 12px 0"></div>
+    <div style="padding:14px 12px 4px;font-size:13px;font-weight:800;color:var(--c-title)">🖼️ صورة الخلفية</div>
+    <div style="padding:0 12px 6px;font-size:12px;color:var(--c-text3)">الصورة تغطي الخلفية بالكامل لجميع المستخدمين</div>
+    ${_bgImg?`
+      <div style="margin:0 12px;border-radius:12px;overflow:hidden;border:1px solid var(--c-border)">
+        <img src="${imgSrc(_bgImg)}" style="width:100%;height:120px;object-fit:cover;display:block"/>
+      </div>
+      <button class="btn btn-danger" onclick="removeBgImage()" style="margin-top:8px">🗑️ إزالة الصورة</button>`:""}
+    <div class="upload-zone" onclick="pickFile(uploadBgImage)">
+      <div style="font-size:32px;margin-bottom:6px">📷</div>
+      <div style="font-size:13px;font-weight:700;color:var(--c-text2)">${_bgImg?"تغيير صورة الخلفية":"اضغط لرفع صورة خلفية"}</div>
+      <div style="font-size:11px;color:var(--c-text3);margin-top:4px">JPG · PNG · WebP — حد أقصى 5 MB</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveFullTheme()" style="margin-top:16px">💾 حفظ المظهر لجميع المستخدمين</button>
+    <div style="height:20px"></div>`;
+}
+
+function applyPresetTheme(i){ _theme={..._PRESET_THEMES?.[i]||PRESET_THEMES[i]}; applyTheme(_theme,_bgImg); loadAdminContent(); }
+function setQuickBg(color){ _theme={..._theme,bg:color}; applyTheme(_theme,_bgImg); loadAdminContent(); }
+function previewCustomColors(){
+  const t={
+    primary:document.getElementById("cp-primary")?.value||_theme.primary,
+    bg:     document.getElementById("cp-bg")?.value     ||_theme.bg,
+    dark:   document.getElementById("cp-dark")?.value   ||_theme.dark,
+    accent: document.getElementById("cp-accent")?.value ||_theme.accent,
+  };
+  applyTheme(t,_bgImg);
+}
+async function uploadBgImage(url){
+  _bgImg=url; localStorage.setItem("azm_bg_img",_bgImg);
+  applyTheme(_theme,_bgImg);
+  try{ await api("/api/shop/settings",{method:"PATCH",body:JSON.stringify({bg_image:_bgImg})}); }catch(e){}
+  toast("✅ تم رفع الصورة وتطبيقها"); await loadAdminContent();
+}
+async function removeBgImage(){
+  _bgImg=""; localStorage.removeItem("azm_bg_img");
+  applyTheme(_theme,"");
+  try{ await api("/api/shop/settings",{method:"PATCH",body:JSON.stringify({bg_image:""})}); }catch(e){}
+  toast("تم إزالة صورة الخلفية"); await loadAdminContent();
+}
+async function saveFullTheme(){
+  localStorage.setItem("azm_theme_v2",JSON.stringify(_theme));
+  localStorage.setItem("azm_bg_img",_bgImg);
+  applyTheme(_theme,_bgImg);
+  try{
+    await api("/api/shop/settings",{method:"PATCH",body:JSON.stringify({
+      theme_json:JSON.stringify(_theme), bg_image:_bgImg,
+    })});
+    toast("✅ تم حفظ المظهر لجميع المستخدمين 🎨");
+  }catch(e){ toast("❌ فشل الحفظ"); }
+}
+
+// ── Admin: Settings ──────────────────────────────────────────────
+async function renderSettingsTab(wrap){
+  let s={};
+  try{ s=await api("/api/shop/settings"); }catch(e){}
+  wrap.innerHTML=`
+    <div style="padding:14px 12px 4px;font-size:13px;font-weight:800;color:var(--c-title)">⚙️ إعدادات البوت</div>
+    <div class="setting-row"><div class="setting-label">رسالة الترحيب</div>
+      <textarea class="setting-inp" id="s-welcome" rows="3" style="resize:none">${H(s.welcome_message||"")}</textarea></div>
+    <div class="setting-row"><div class="setting-label">يوزر الدعم (بدون @)</div>
+      <input class="setting-inp" id="s-support" value="${H(s.support_username||"")}" placeholder="support"/></div>
+    <div class="setting-row"><div class="setting-label">سعر الصرف الافتراضي (ل.س = 1$)</div>
+      <input class="setting-inp" id="s-rate" type="number" value="${s.exchange_rate||15000}"/></div>
+    <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:16px">💾 حفظ الإعدادات</button>
+    <div style="height:20px"></div>`;
+}
+async function saveSettings(){
+  try{
+    await api("/api/shop/settings",{method:"PATCH",body:JSON.stringify({
+      welcome_message: document.getElementById("s-welcome")?.value||"",
+      support_username:document.getElementById("s-support")?.value||"",
+      exchange_rate:   parseFloat(document.getElementById("s-rate")?.value||"15000"),
+    })});
+    toast("✅ تم حفظ الإعدادات");
+  }catch(e){ toast("❌ فشل الحفظ"); }
+}
+
+// ════════════════════════════════════════════
+// ROUTER
+// ════════════════════════════════════════════
+async function renderPage(){
+  switch(currentTab){
+    case "home":     await renderHome();        break;
+    case "deposit":  await renderDeposit();     break;
+    case "orders":   await renderOrders();      break;
+    case "deposits": await renderMyDeposits();  break;
+    case "support":  await renderSupport();     break;
+    case "admin":    await renderAdmin();       break;
+    default:         await renderHome();
+  }
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+async function init(){
+  _loadSavedTheme();
+  applyTheme(_theme,_bgImg);
+
+  // جلب الثيم والرصيد بالتوازي
+  try{
+    const s=await api("/api/shop/settings");
+    if(s.theme_json){ try{ const t=JSON.parse(s.theme_json); if(t?.primary){ _theme=t; localStorage.setItem("azm_theme_v2",JSON.stringify(t)); } }catch(e){} }
+    if(s.bg_image!==undefined){ _bgImg=s.bg_image||""; localStorage.setItem("azm_bg_img",_bgImg); }
+    applyTheme(_theme,_bgImg);
+  }catch(e){}
+
+  if(userId){
+    try{ const u=await api(`/api/shop/user/${userId}`); userBalance=u?.balance??0; }catch(e){}
+  }
+
+  renderTabBar();
+  await renderPage();
+}
+
+init();
+</script>
+</body>
+</html>

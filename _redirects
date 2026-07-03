@@ -1,0 +1,4 @@
+/webhook        /_worker.js  200
+/api/*          /_worker.js  200
+/setup-webhook  /_worker.js  200
+/*              /index.html  200
